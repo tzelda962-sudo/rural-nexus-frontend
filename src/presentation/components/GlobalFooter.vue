@@ -22,14 +22,13 @@
         <div>
           <h4 class="font-display font-semibold text-white mb-4">Quick Links</h4>
           <ul class="space-y-2 text-sm text-white/90">
-            <li><NuxtLink to="/" class="hover:text-leaf transition-colors">Home</NuxtLink></li>
-            <li><NuxtLink to="/about" class="hover:text-leaf transition-colors">Who We Are</NuxtLink></li>
-            <li><NuxtLink to="/programs" class="hover:text-leaf transition-colors">Programs</NuxtLink></li>
-            <li><NuxtLink to="/volunteer" class="hover:text-leaf transition-colors">Volunteer</NuxtLink></li>
-            <li><NuxtLink to="/events" class="hover:text-leaf transition-colors">Events</NuxtLink></li>
-            <li><NuxtLink to="/gallery" class="hover:text-leaf transition-colors">Gallery</NuxtLink></li>
-            <li><NuxtLink to="/services" class="hover:text-leaf transition-colors">Our Network</NuxtLink></li>
-            <li><a href="#" class="hover:text-leaf transition-colors">Privacy Policy</a></li>
+            <li><NuxtLink to="/" class="hover:text-leaf transition-colors text-white/70">Home</NuxtLink></li>
+            <li><NuxtLink to="/about" class="hover:text-leaf transition-colors text-white/70">Who We Are</NuxtLink></li>
+            <li><NuxtLink to="/impact" class="hover:text-leaf transition-colors text-white/70">Impact Reports</NuxtLink></li>
+            <li><NuxtLink to="/stories" class="hover:text-leaf transition-colors text-white/70">Field Dispatches</NuxtLink></li>
+            <li><NuxtLink to="/research" class="hover:text-leaf transition-colors text-white/70">Methodology Repository</NuxtLink></li>
+            <li><NuxtLink to="/gallery" class="hover:text-leaf transition-colors text-white/70">Gallery</NuxtLink></li>
+            <li><NuxtLink to="/volunteer" class="hover:text-leaf transition-colors text-white/70">Volunteer</NuxtLink></li>
           </ul>
         </div>
 

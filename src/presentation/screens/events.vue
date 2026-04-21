@@ -1,5 +1,126 @@
 <script setup lang="ts">
-useHead({ title: 'Events — RuralNexus' });
+import { ref, computed } from 'vue';
+import { 
+  Droplets, 
+  Sprout, 
+  ShieldAlert, 
+  BookOpen, 
+  Tractor, 
+  Heart, 
+  ArrowRight,
+  FileText,
+  Download,
+  Calendar,
+  MapPin,
+  ExternalLink
+} from 'lucide-vue-next';
+
+useHead({ title: 'Action Hub — RuralNexus' });
+
+const activeTab = ref('projects');
+
+const tabs = [
+  { id: 'projects', label: 'Active Projects', icon: Sprout },
+  { id: 'publications', label: 'Publications', icon: FileText },
+  { id: 'news', label: 'News & Events', icon: Calendar },
+];
+
+// Migrated from old programs.vue
+const projectItems = [
+  {
+    id: 'p1',
+    title: 'Water Governance & Sovereignty',
+    description: 'Implementing decentralized, solar-powered filtration systems and community-led watershed management protocols in arid innovation zones.',
+    stat: '312 systems',
+    statLabel: 'Deployed Innovation Nodes',
+    icon: Droplets,
+    color: 'emerald',
+    location: 'Turkana, Kenya',
+    status: 'In Progress'
+  },
+  {
+    id: 'p2',
+    title: 'Regenerative Agro-Systems',
+    description: 'Advancing native-species reforestation and soil health monitoring through satellite data integration and local knowledge mapping.',
+    stat: '1.2M nodes',
+    statLabel: 'Active Reforestation Points',
+    icon: Sprout,
+    color: 'leaf',
+    location: 'Amazon Basin, Brazil',
+    status: 'Scaling'
+  },
+  {
+    id: 'p3',
+    title: 'Climate Resilience Hubs',
+    description: 'Establishing rapid-response field stations and climate-adaptive infrastructure for vulnerable agrarian communities across the Global South.',
+    stat: '48 hubs',
+    statLabel: 'Active Regional Stations',
+    icon: ShieldAlert,
+    color: 'amber',
+    location: 'Sundarbans, India',
+    status: 'Active'
+  },
+  {
+    id: 'p4',
+    title: 'Action Research Education',
+    description: 'Scaling field-based learning modules and scholarships for the next generation of rural development leaders and agronomists.',
+    stat: '9,400 leaders',
+    statLabel: 'Empowered Research Fellows',
+    icon: BookOpen,
+    color: 'cyan',
+    location: 'Global Connectivity',
+    status: 'Enrolling'
+  },
+  {
+    id: 'p5',
+    title: 'Sustainable Food Nexuses',
+    description: 'Developing drought-resistant seed registries and circular economy grain banks co-managed with regional cooperatives.',
+    stat: '22,000 cooperatives',
+    statLabel: 'Networked Field Partners',
+    icon: Tractor,
+    color: 'primary',
+    location: 'Sindh, Pakistan',
+    status: 'Field Testing'
+  },
+  {
+    id: 'p6',
+    title: 'Biosocial Health Integration',
+    description: 'Merging clinical rural health services with nutritional security data to improve community resilience metrics.',
+    stat: '14 hubs',
+    statLabel: 'Integrated Health Stations',
+    icon: Heart,
+    color: 'leaf-dark',
+    location: 'Oaxaca, Mexico',
+    status: 'Pilot'
+  }
+];
+
+const publications = [
+  {
+    id: 'pub1',
+    title: 'Impact Report 2026: The Transdisciplinary Gap',
+    author: 'RuralNexus PAC3 Team',
+    category: 'Annual Report',
+    date: 'March 2026',
+    summary: 'A deep dive into the socio-technical barriers preventing rural innovation from scaling across disparate geopolitical regions.'
+  },
+  {
+    id: 'pub2',
+    title: 'Drought Resilience in Smallholder Systems',
+    author: 'Dr. Sarah K. et al.',
+    category: 'Policy Brief',
+    date: 'February 2026',
+    summary: 'Evidence-based recommendations for integrating decentralized greywater systems into regional irrigation policy.'
+  },
+  {
+    id: 'pub3',
+    title: 'Action Research: Methodological Sovereignty',
+    author: 'RuralNexus PAC4 Education',
+    category: 'Research Paper',
+    date: 'January 2026',
+    summary: 'A proposed framework for honouring local farming knowledge within high-precision satellite monitoring protocols.'
+  }
+];
 
 const upcomingEvents = [
   {
@@ -8,11 +129,9 @@ const upcomingEvents = [
     type: 'Conference',
     date: 'June 12–14, 2026',
     location: 'Geneva, Switzerland',
-    description:
-      'A flagship two-day summit bringing together agronomists, policy-makers, and NGO practitioners to share emerging models for climate-resilient food systems across Sub-Saharan Africa and Central Asia.',
+    description: 'A flagship summit bringing together agronomists and policy-makers to share climate-resilient models.',
     spotsLeft: 41,
     gradient: 'from-primary to-leaf-600',
-    virtual: false,
   },
   {
     id: 'e2',
@@ -20,281 +139,199 @@ const upcomingEvents = [
     type: 'Webinar',
     date: 'May 8, 2026',
     location: 'Online',
-    description:
-      'A free one-hour webinar for researchers and NGO practitioners exploring how to design monitoring & evaluation frameworks that honour community participation without sacrificing scientific rigour.',
+    description: 'Exploring how to design M&E frameworks that honour community participation.',
     spotsLeft: 210,
     gradient: 'from-cyan to-leaf-500',
-    virtual: true,
-  },
-  {
-    id: 'e3',
-    title: 'Living Labs Field Visit — Western Kenya',
-    type: 'Field Visit',
-    date: 'July 3–7, 2026',
-    location: 'Kisumu, Kenya',
-    description:
-      'A week-long immersive field visit for PA3 partners and selected fellows to observe our on-farm trials with drought-tolerant maize varieties and soil-health monitoring protocols.',
-    spotsLeft: 8,
-    gradient: 'from-leaf-700 to-primary-container',
-    virtual: false,
-  },
-  {
-    id: 'e4',
-    title: 'Volunteer Orientation — Q3 2026 Cohort',
-    type: 'Orientation',
-    date: 'August 4, 2026',
-    location: 'Online',
-    description:
-      'Welcoming our newest cohort of volunteers. This interactive session covers RuralNexus mission, program area introductions, tool access, and a live Q&A with program coordinators.',
-    spotsLeft: 55,
-    gradient: 'from-primary-container to-cyan',
-    virtual: true,
-  },
-  {
-    id: 'e5',
-    title: 'Grant Writing Masterclass for NGOs',
-    type: 'Workshop',
-    date: 'September 17, 2026',
-    location: 'Online',
-    description:
-      'A half-day intensive workshop covering EU Horizon proposal structuring, budget justification standards, and common reviewer pitfalls — facilitated by the RuralNexus PA1 Acquisition team.',
-    spotsLeft: 30,
-    gradient: 'from-leaf-600 to-primary',
-    virtual: true,
-  },
-  {
-    id: 'e6',
-    title: 'Annual Partners Meeting 2026',
-    type: 'Partner Event',
-    date: 'October 21–22, 2026',
-    location: 'Nairobi, Kenya',
-    description:
-      'Invitation-only annual convening for institutional partners, funders, and fellows. Includes programme reviews, strategy sessions, and the RuralNexus Impact Awards ceremony.',
-    spotsLeft: 0,
-    gradient: 'from-sunset to-primary-container',
-    virtual: false,
-  },
-];
-
-const pastEvents = [
-  {
-    title: 'Soil Health & Digital Sensing Workshop',
-    date: 'March 2026',
-    location: 'Dakar, Senegal',
-    type: 'Workshop',
-    attendees: 78,
-  },
-  {
-    title: 'Policy Roundtable: Rural SDG Alignment',
-    date: 'February 2026',
-    location: 'Brussels, Belgium',
-    type: 'Roundtable',
-    attendees: 44,
-  },
-  {
-    title: 'Webinar: Remote Sensing for Smallholder Agriculture',
-    date: 'January 2026',
-    location: 'Online',
-    type: 'Webinar',
-    attendees: 312,
-  },
-  {
-    title: 'Cassava Belt Field Research Exchange',
-    date: 'December 2025',
-    location: 'Ibadan, Nigeria',
-    type: 'Field Visit',
-    attendees: 22,
-  },
+  }
 ];
 
 const typeColors: Record<string, string> = {
   Conference: 'bg-primary/10 text-primary',
   Webinar: 'bg-cyan/10 text-cyan',
   'Field Visit': 'bg-leaf/10 text-leaf',
-  Orientation: 'bg-amber-500/10 text-amber-600',
-  Workshop: 'bg-sunset/10 text-sunset',
-  'Partner Event': 'bg-primary-container/20 text-on-primary-container',
-  Roundtable: 'bg-primary-container/20 text-on-primary-container',
+  Projects: 'bg-primary/5 text-primary'
 };
 </script>
 
 <template>
-  <div class="flex flex-col bg-surface">
+  <div class="flex flex-col bg-surface min-h-screen">
     <!-- Hero -->
-    <section class="relative overflow-hidden bg-gradient-to-br from-primary-container to-primary py-20 text-white">
-      <div class="hex-mask absolute -right-20 top-0 h-80 w-80 bg-white opacity-[0.04] pointer-events-none" />
-      <div class="relative z-10 mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
-        <p class="text-sm font-bold uppercase tracking-widest opacity-70">Gatherings & Learning</p>
-        <h1 class="mt-4 font-display text-4xl font-bold md:text-5xl">Events & Convenings</h1>
-        <p class="mx-auto mt-5 max-w-2xl font-body text-lg leading-relaxed opacity-85">
-          From international summits to online webinars, RuralNexus brings practitioners, researchers,
-          and communities together to share knowledge and build collective capacity.
-        </p>
+    <section class="relative overflow-hidden bg-primary py-24 text-white">
+      <div class="absolute inset-0 opacity-10 pointer-events-none">
+        <div class="absolute -right-24 -top-24 w-96 h-96 hex-mask bg-white"></div>
+        <div class="absolute left-10 bottom-10 w-80 h-80 hex-mask border-2 border-white/20"></div>
+      </div>
+      
+      <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl">
+          <p class="text-xs font-bold uppercase tracking-[0.3em] text-leaf-300 mb-6">Development Hub</p>
+          <h1 class="font-display text-5xl md:text-6xl font-bold leading-tight mb-8">
+            The <span class="text-leaf-300 italic">Action Hub</span>
+          </h1>
+          <p class="font-body text-lg md:text-xl text-white/80 leading-relaxed balance">
+            A comprehensive repository for RuralNexus projects, research publications, and international gatherings designed to drive food system transformation.
+          </p>
+        </div>
       </div>
     </section>
 
-    <!-- Upcoming events -->
-    <section class="py-24 bg-surface">
-      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="mb-14 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <p class="text-sm font-bold uppercase tracking-widest text-primary">Upcoming</p>
-            <h2 class="mt-2 font-display text-3xl font-bold text-on-surface">Events in 2026</h2>
-          </div>
-          <div class="flex gap-2">
-            <button
-              type="button"
-              class="rounded-full border border-outline-variant px-4 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container-low transition"
-            >
-              All Types
-            </button>
-            <button
-              type="button"
-              class="rounded-full border border-outline-variant px-4 py-2 text-sm font-semibold text-on-surface hover:bg-surface-container-low transition"
-            >
-              Virtual Only
-            </button>
-          </div>
-        </div>
-
-        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <article
-            v-for="event in upcomingEvents"
-            :key="event.id"
-            class="group flex flex-col overflow-hidden rounded-2xl bg-surface-container-lowest ambient-shadow transition hover:-translate-y-1"
+    <!-- Sub-navigation Tabs -->
+    <section class="sticky top-[72px] z-40 bg-surface/90 backdrop-blur-xl border-b border-outline-variant/10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center gap-8 py-4 overflow-x-auto no-scrollbar">
+          <button 
+            v-for="tab in tabs" 
+            :key="tab.id"
+            @click="activeTab = tab.id"
+            class="flex items-center gap-3 px-6 py-3 rounded-2xl transition-all font-bold text-sm tracking-widest uppercase whitespace-nowrap"
+            :class="activeTab === tab.id ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-105' : 'text-on-surface-variant hover:bg-surface-container-low'"
           >
-            <!-- Gradient banner -->
-            <div
-              class="relative h-36 bg-gradient-to-br"
-              :class="event.gradient"
-            >
-              <div class="absolute inset-0 opacity-20 mix-blend-overlay" style="background-image: radial-gradient(circle at 30% 40%, white 0, transparent 55%);" />
-              <!-- Type badge -->
-              <div class="absolute left-4 top-4">
-                <span
-                  class="rounded-full bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-on-surface"
-                  :class="typeColors[event.type]"
-                >
-                  {{ event.type }}
-                </span>
-              </div>
-              <!-- Virtual tag -->
-              <div v-if="event.virtual" class="absolute bottom-4 right-4">
-                <span class="rounded-full bg-black/30 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
-                  Virtual
-                </span>
-              </div>
-            </div>
-
-            <div class="flex flex-1 flex-col p-6">
-              <!-- Meta -->
-              <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-on-surface-variant">
-                <span class="flex items-center gap-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  {{ event.date }}
-                </span>
-                <span class="h-1 w-1 rounded-full bg-outline-variant" />
-                <span class="flex items-center gap-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                  {{ event.location }}
-                </span>
-              </div>
-
-              <h3 class="mt-3 font-display text-lg font-bold leading-snug text-on-surface">
-                {{ event.title }}
-              </h3>
-              <p class="mt-2 flex-1 font-body text-sm leading-relaxed text-on-surface-variant">
-                {{ event.description }}
-              </p>
-
-              <!-- Footer -->
-              <div class="mt-6 flex items-center justify-between">
-                <span
-                  v-if="event.spotsLeft > 0"
-                  class="text-xs font-semibold"
-                  :class="event.spotsLeft < 15 ? 'text-sunset' : 'text-on-surface-variant'"
-                >
-                  {{ event.spotsLeft < 15 ? '🔥' : '' }} {{ event.spotsLeft }} spots left
-                </span>
-                <span v-else class="text-xs font-semibold text-on-surface-variant opacity-50">
-                  Invitation only
-                </span>
-                <button
-                  type="button"
-                  :disabled="event.spotsLeft === 0"
-                  class="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-on-primary transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  {{ event.spotsLeft > 0 ? 'Register' : 'Closed' }}
-                </button>
-              </div>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- Past events archive -->
-    <section class="bg-surface-container-low py-20">
-      <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <div class="mb-10">
-          <p class="text-sm font-bold uppercase tracking-widest text-primary">Archive</p>
-          <h2 class="mt-2 font-display text-2xl font-bold text-on-surface md:text-3xl">Past Events</h2>
-        </div>
-
-        <div class="overflow-hidden rounded-2xl bg-surface-container-lowest ambient-shadow">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="border-b border-outline-variant/20 bg-surface-container-low">
-                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-on-surface-variant">Event</th>
-                <th class="hidden px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-on-surface-variant sm:table-cell">Type</th>
-                <th class="hidden px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-on-surface-variant md:table-cell">Date</th>
-                <th class="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider text-on-surface-variant">Location</th>
-                <th class="hidden px-6 py-4 text-right text-xs font-bold uppercase tracking-wider text-on-surface-variant lg:table-cell">Attendees</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-outline-variant/10">
-              <tr
-                v-for="past in pastEvents"
-                :key="past.title"
-                class="hover:bg-surface-container-low transition-colors"
-              >
-                <td class="px-6 py-4 font-body font-medium text-on-surface">{{ past.title }}</td>
-                <td class="hidden px-6 py-4 sm:table-cell">
-                  <span class="rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase" :class="typeColors[past.type] ?? 'bg-surface-container-low text-on-surface-variant'">
-                    {{ past.type }}
-                  </span>
-                </td>
-                <td class="hidden px-6 py-4 text-on-surface-variant md:table-cell">{{ past.date }}</td>
-                <td class="px-6 py-4 text-on-surface-variant">{{ past.location }}</td>
-                <td class="hidden px-6 py-4 text-right font-semibold text-on-surface lg:table-cell">{{ past.attendees }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="mt-6 text-center">
-          <button type="button" class="rounded-full border border-outline-variant px-6 py-3 text-sm font-semibold text-on-surface hover:bg-surface-container-lowest transition">
-            Load more past events
+            <component :is="tab.icon" class="w-4 h-4" />
+            {{ tab.label }}
           </button>
         </div>
       </div>
     </section>
 
-    <!-- CTA -->
-    <section class="bg-primary py-16 text-on-primary">
-      <div class="mx-auto max-w-3xl px-4 text-center sm:px-6 lg:px-8">
-        <h2 class="font-display text-2xl font-bold md:text-3xl">Want to speak or host an event?</h2>
-        <p class="mx-auto mt-4 max-w-lg font-body opacity-80">
-          We welcome collaboration proposals from research institutions, universities, and
-          development organisations to co-host or co-present at our events.
-        </p>
-        <NuxtLink
-          to="/contact"
-          class="mt-8 inline-flex items-center gap-2 rounded-lg bg-white px-8 py-4 font-bold text-primary shadow-lg transition hover:-translate-y-0.5"
+    <!-- Main Content Area -->
+    <main class="flex-grow py-24">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- MODULE: Projects -->
+        <Transition
+          enter-active-class="transition duration-500 ease-out"
+          enter-from-class="opacity-0 translate-y-4"
+          enter-to-class="opacity-100 translate-y-0"
         >
-          Get in Touch
+          <div v-if="activeTab === 'projects'" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <article 
+              v-for="proj in projectItems" 
+              :key="proj.id"
+              class="group bg-surface-container-lowest p-8 rounded-[40px] shadow-sm hover:shadow-2xl transition-all duration-500"
+            >
+              <div class="flex items-center justify-between mb-8">
+                <div class="w-14 h-14 hex-mask bg-primary/5 group-hover:bg-primary transition-colors flex items-center justify-center text-primary group-hover:text-white">
+                   <component :is="proj.icon" class="w-6 h-6" />
+                </div>
+                <span class="text-[10px] font-bold px-3 py-1 bg-surface-container-low rounded-full uppercase tracking-widest text-on-surface-variant">
+                  {{ proj.status }}
+                </span>
+              </div>
+              <h3 class="text-lg font-display font-bold text-on-surface mb-3">{{ proj.title }}</h3>
+              <p class="text-sm font-body text-on-surface-variant leading-relaxed opacity-70 mb-8">{{ proj.description }}</p>
+              
+              <div class="flex items-center gap-2 text-[10px] font-bold text-on-surface-variant mb-6 opacity-50 uppercase tracking-widest">
+                <MapPin class="w-3 h-3" /> {{ proj.location }}
+              </div>
+
+              <div class="border-t border-outline-variant/10 pt-6">
+                <p class="text-xl font-display font-bold text-primary mb-0.5">{{ proj.stat }}</p>
+                <p class="text-[11px] font-bold text-on-surface-variant opacity-50 uppercase tracking-widest">{{ proj.statLabel }}</p>
+              </div>
+            </article>
+          </div>
+        </Transition>
+
+        <!-- MODULE: Publications -->
+        <Transition
+          enter-active-class="transition duration-500 ease-out"
+          enter-from-class="opacity-0 translate-y-4"
+          enter-to-class="opacity-100 translate-y-0"
+        >
+          <div v-if="activeTab === 'publications'" class="grid grid-cols-1 gap-6">
+            <div 
+              v-for="pub in publications" 
+              :key="pub.id"
+              class="p-8 bg-surface-container-lowest rounded-[32px] border border-outline-variant/10 hover:border-primary/30 transition-all flex flex-col md:flex-row items-center justify-between gap-8 group"
+            >
+              <div class="flex items-center gap-8">
+                 <div class="w-16 h-16 rounded-2xl bg-surface-container-low flex items-center justify-center text-on-surface-variant/40 group-hover:text-primary group-hover:bg-primary/5 transition-all">
+                   <FileText class="w-8 h-8" />
+                 </div>
+                 <div>
+                   <span class="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-2 block">{{ pub.category }}</span>
+                   <h3 class="text-xl font-display font-bold text-on-surface mb-2 tracking-tight">{{ pub.title }}</h3>
+                   <p class="text-sm text-on-surface-variant font-body opacity-70 mb-1 leading-relaxed">{{ pub.summary }}</p>
+                   <p class="text-xs font-bold text-on-surface-variant/50 uppercase tracking-widest">{{ pub.author }} • {{ pub.date }}</p>
+                 </div>
+              </div>
+              <button class="flex-shrink-0 flex items-center gap-3 px-6 py-3 bg-surface-container-highest text-on-surface rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
+                <Download class="w-4 h-4" /> PDF Access
+              </button>
+            </div>
+          </div>
+        </Transition>
+
+        <!-- MODULE: News & Events -->
+        <Transition
+          enter-active-class="transition duration-500 ease-out"
+          enter-from-class="opacity-0 translate-y-4"
+          enter-to-class="opacity-100 translate-y-0"
+        >
+          <div v-if="activeTab === 'news'" class="grid md:grid-cols-2 gap-8">
+             <article
+              v-for="event in upcomingEvents"
+              :key="event.id"
+              class="flex flex-col bg-surface-container-lowest rounded-[44px] overflow-hidden group hover:shadow-2xl transition-all duration-500"
+            >
+              <div class="p-10 flex-grow">
+                <div class="flex justify-between items-start mb-10">
+                  <span class="rounded-full bg-primary/5 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest text-primary">
+                    {{ event.type }}
+                  </span>
+                  <div class="flex items-center gap-2 text-[11px] font-bold text-on-surface-variant/50 uppercase tracking-widest">
+                    <Calendar class="w-3.5 h-3.5" /> {{ event.date }}
+                  </div>
+                </div>
+                <h3 class="text-2xl font-display font-bold text-on-surface mb-4 leading-snug group-hover:text-primary transition-colors">{{ event.title }}</h3>
+                <p class="text-sm font-body text-on-surface-variant leading-relaxed opacity-70 mb-10">{{ event.description }}</p>
+                
+                <div class="flex items-center justify-between mt-auto pt-8 border-t border-outline-variant/10">
+                  <div class="flex items-center gap-2 text-xs font-bold text-on-surface-variant">
+                    <MapPin class="w-4 h-4 text-primary/40" /> {{ event.location }}
+                  </div>
+                  <button class="flex items-center gap-3 text-xs font-bold text-primary uppercase tracking-widest group/btn">
+                    Register Now <ArrowRight class="w-4 h-4 transition-transform group-btn:translate-x-1" />
+                  </button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </Transition>
+
+      </div>
+    </main>
+
+    <!-- Global CTA -->
+    <section class="bg-surface-container-low py-24">
+      <div class="max-w-4xl mx-auto px-4 text-center">
+        <h2 class="font-display text-3xl font-bold mb-6 tracking-tight">Catalysing Change Through Collaboration</h2>
+        <p class="text-lg text-on-surface-variant font-body opacity-70 mb-10 leading-relaxed">
+          We welcome proposals for co-hosting events, contributing to research publications, or partnering on field implementation projects.
+        </p>
+        <NuxtLink to="/contact" class="inline-flex items-center gap-3 px-10 py-5 bg-white text-primary rounded-[22px] font-bold shadow-xl hover:shadow-2xl transition-all">
+          Initiate Contact <ExternalLink class="w-4 h-4" />
         </NuxtLink>
       </div>
     </section>
   </div>
 </template>
+
+<style scoped>
+.hex-mask {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.balance {
+  text-wrap: balance;
+}
+</style>
+
