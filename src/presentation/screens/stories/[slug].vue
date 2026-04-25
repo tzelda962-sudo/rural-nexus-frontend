@@ -97,6 +97,8 @@ const heroGradient = computed(() => story.value?.gradient ?? 'from-emerald-600 t
 </template>
 
 <style scoped>
+@reference "~/assets/css/main.css";
+
 .prose-like :deep(p) { @apply mb-5 text-on-surface-variant leading-relaxed; }
 .prose-like :deep(h2), .prose-like :deep(h3) { @apply font-display font-bold text-on-surface mt-8 mb-3; }
 .prose-like :deep(blockquote) { @apply border-l-4 border-primary pl-6 italic my-8 text-lg text-on-surface-variant; }

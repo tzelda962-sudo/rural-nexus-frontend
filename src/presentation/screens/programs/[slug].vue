@@ -144,6 +144,8 @@ const COLOR_CLASS: Record<string, string> = {
 </template>
 
 <style scoped>
+@reference "~/assets/css/main.css";
+
 .hex-mask { clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); }
 .prose-like :deep(p) { @apply mb-5 text-on-surface-variant leading-relaxed; }
 .prose-like :deep(h2), .prose-like :deep(h3) { @apply font-display font-bold text-on-surface mt-8 mb-3; }

@@ -91,6 +91,8 @@ const contentHtml = computed(() => lexicalToHtml(article.value?.content))
 </template>
 
 <style scoped>
+@reference "~/assets/css/main.css";
+
 .prose-like :deep(h1), .prose-like :deep(h2), .prose-like :deep(h3) {
   @apply font-display font-bold text-on-surface;
 }
