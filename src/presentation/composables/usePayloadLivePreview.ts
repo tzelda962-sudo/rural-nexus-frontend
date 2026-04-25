@@ -1,12 +1,22 @@
-import { ref, onMounted } from 'vue'
-import type { Ref } from 'vue'
+import { ref, watch, onMounted, isRef } from 'vue'
+import type { Ref, MaybeRef } from 'vue'
 
-export function usePayloadLivePreview<T extends object>(initial: T): {
-  previewData: Ref<T>
+export function usePayloadLivePreview<T extends object>(source: MaybeRef<T | null>): {
+  previewData: Ref<T | null>
   isPreview: Ref<boolean>
 } {
-  const previewData = ref(initial) as Ref<T>
+  const previewData = ref(isRef(source) ? source.value : source) as Ref<T | null>
   const isPreview = ref(false)
+
+  // Keep previewData in sync with the source ref (handles navigation remounts
+  // where useAsyncData resolves asynchronously after setup).
+  if (isRef(source)) {
+    watch(source, (val) => {
+      if (!isPreview.value) {
+        previewData.value = val
+      }
+    })
+  }
 
   if (import.meta.client) {
     onMounted(() => {
@@ -23,7 +33,6 @@ export function usePayloadLivePreview<T extends object>(initial: T): {
       }
       window.addEventListener('message', handler)
 
-      // Signal readiness to the Payload admin iframe parent
       if (window.parent !== window) {
         window.parent.postMessage({ type: 'payload-live-preview-ready' }, '*')
       }

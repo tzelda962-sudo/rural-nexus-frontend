@@ -161,7 +161,7 @@ const { data: rawPage } = await useAsyncData('contact-page-global', () =>
   $fetch<ContactPageGlobal>(`${apiBase}/api/globals/contact-page`),
 )
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage.value ?? {} as ContactPageGlobal)
+const { previewData: pageData } = usePayloadLivePreview(rawPage)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Contact — RuralNexus',

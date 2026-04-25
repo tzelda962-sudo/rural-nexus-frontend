@@ -44,7 +44,7 @@ const [{ data: rawPage }, { data: galleryData }] = await Promise.all([
   ),
 ])
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage.value ?? {} as GalleryPageGlobal)
+const { previewData: pageData } = usePayloadLivePreview(rawPage)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Media Gallery — RuralNexus',

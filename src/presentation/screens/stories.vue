@@ -31,7 +31,7 @@ const [{ data: rawPage }, { data: storiesData }] = await Promise.all([
   ),
 ])
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage.value ?? {} as StoriesPageGlobal)
+const { previewData: pageData } = usePayloadLivePreview(rawPage)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Field Stories — RuralNexus',

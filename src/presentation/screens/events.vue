@@ -45,7 +45,7 @@ const { data: rawPage } = await useAsyncData('events-page-global', () =>
   $fetch<EventsPageGlobal>(`${apiBase}/api/globals/events-page`),
 )
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage.value ?? {} as EventsPageGlobal)
+const { previewData: pageData } = usePayloadLivePreview(rawPage)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Action Hub — RuralNexus',

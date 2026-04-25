@@ -67,7 +67,7 @@ const [{ data: rawPage }, { data: allResources }] = await Promise.all([
   ),
 ])
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage.value ?? {} as ResearchPageGlobal)
+const { previewData: pageData } = usePayloadLivePreview(rawPage)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Research & Methodologies — RuralNexus',

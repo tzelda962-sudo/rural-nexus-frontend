@@ -69,7 +69,7 @@ const [{ data: rawPage }, { data: allMembers }] = await Promise.all([
   useAsyncData('teamData', () => teamRepo.getOrganigram()),
 ])
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage.value ?? {} as AboutPageGlobal)
+const { previewData: pageData } = usePayloadLivePreview(rawPage)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Who We Are — RuralNexus',

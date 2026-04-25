@@ -301,7 +301,7 @@ const [{ data: pageData }, { data: homeData }, { data: testimonialsData }] = awa
   ),
 ])
 
-const { previewData: page } = usePayloadLivePreview(pageData.value ?? {} as HomePageGlobal)
+const { previewData: page } = usePayloadLivePreview(pageData)
 
 const latestEvents = computed(() =>
   (homeData.value?.latestEvents ?? []).slice(0, page.value?.newsSection?.latestEventsCount ?? 4),

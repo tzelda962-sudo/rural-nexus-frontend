@@ -33,7 +33,7 @@ const [{ data: rawPage }, { data: homeData }] = await Promise.all([
   ),
 ])
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage.value ?? {} as ProgramsPageGlobal)
+const { previewData: pageData } = usePayloadLivePreview(rawPage)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Our Programs: Structural Glue — RuralNexus',

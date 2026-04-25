@@ -35,7 +35,7 @@ const [{ data: rawPage }, { data: metricsData }] = await Promise.all([
   ),
 ])
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage.value ?? {} as ImpactPageGlobal)
+const { previewData: pageData } = usePayloadLivePreview(rawPage)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Impact Metrics — RuralNexus',
