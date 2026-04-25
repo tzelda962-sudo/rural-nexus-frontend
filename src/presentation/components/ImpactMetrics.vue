@@ -1,63 +1,92 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { 
-  Users, 
-  Orbit, 
-  ShieldCheck, 
-  Globe2 
+import { ref, onMounted, computed } from 'vue';
+import {
+  Users,
+  Orbit,
+  ShieldCheck,
+  Globe2,
 } from 'lucide-vue-next';
+import type { Component } from 'vue';
 
-interface Metric {
-  value: number
-  suffix: string
-  label: string
-  description: string
-  icon: any
-  color: string
+type MetricItem = {
+  id?: string
+  metric: string
+  value: string
+  unit?: string | null
+  description?: string | null
+  icon?: string | null
+  category?: string | null
+  trend?: 'up' | 'down' | 'stable' | null
 }
 
-const metrics: Metric[] = [
+const props = withDefaults(defineProps<{ items?: MetricItem[] }>(), { items: () => [] })
+
+const ICON_MAP: Record<string, Component> = { Users, Orbit, ShieldCheck, Globe2 }
+
+const FALLBACK_METRICS = [
   {
-    value: 12500,
+    numericValue: 12500,
     suffix: '+',
     label: 'Lives Impacted',
     description: 'Direct fellows and regional beneficiaries reached through transdisciplinary nexus points.',
     icon: Users,
-    color: 'from-emerald-500 to-leaf-500'
+    color: 'from-emerald-500 to-leaf-500',
   },
   {
-    value: 64,
+    numericValue: 64,
     suffix: '',
     label: 'Active Nodes',
     description: 'Context-specific research units operational across 12 strategic rural ecosystems.',
     icon: Orbit,
-    color: 'from-leaf-500 to-cyan-500'
+    color: 'from-leaf-500 to-cyan-500',
   },
   {
-    value: 100,
+    numericValue: 100,
     suffix: '%',
     label: 'Transparency',
     description: 'Every resource and allocation is tracked in our open intelligence ledger.',
     icon: ShieldCheck,
-    color: 'from-cyan-500 to-emerald-500'
+    color: 'from-cyan-500 to-emerald-500',
   },
 ]
 
-const displayed = ref<number[]>(metrics.map(() => 0))
+const normalised = computed(() => {
+  if (!props.items || props.items.length === 0) return FALLBACK_METRICS
+  return props.items.map(item => {
+    const raw = item.value ?? ''
+    const numeric = parseFloat(raw.replace(/[^0-9.]/g, '')) || 0
+    const suffix = item.unit ?? (raw.includes('%') ? '%' : raw.includes('+') ? '+' : '')
+    return {
+      numericValue: numeric,
+      suffix,
+      label: item.metric,
+      description: item.description ?? '',
+      icon: ICON_MAP[item.icon ?? ''] ?? Globe2,
+      color: 'from-primary to-leaf-500',
+    }
+  })
+})
+
+const displayed = ref<number[]>([])
 const sectionRef = ref<HTMLElement | null>(null)
 const animated = ref(false)
+
+function resetDisplayed() {
+  displayed.value = normalised.value.map(() => 0)
+}
 
 function animateCounts() {
   if (animated.value) return
   animated.value = true
+  resetDisplayed()
 
   const duration = 2000
   const start = performance.now()
 
   function tick(now: number) {
     const progress = Math.min((now - start) / duration, 1)
-    const eased = 1 - Math.pow(1 - progress, 4) // Quartic ease out
-    displayed.value = metrics.map(m => Math.round(m.value * eased))
+    const eased = 1 - Math.pow(1 - progress, 4)
+    displayed.value = normalised.value.map(m => Math.round(m.numericValue * eased))
     if (progress < 1) requestAnimationFrame(tick)
   }
 
@@ -65,6 +94,7 @@ function animateCounts() {
 }
 
 onMounted(() => {
+  resetDisplayed()
   if (!sectionRef.value || typeof IntersectionObserver === 'undefined') {
     animateCounts()
     return
@@ -98,7 +128,7 @@ function formatNumber(n: number) {
     </div>
 
     <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-3x text-center mb-20">
+      <div class="mx-auto max-w-3xl text-center mb-20">
         <div class="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 rounded-full text-[10px] font-bold text-primary uppercase tracking-[0.3em] mb-8">
            <Globe2 class="w-3.5 h-3.5" /> Global Footprint
         </div>
@@ -112,25 +142,25 @@ function formatNumber(n: number) {
 
       <div class="grid gap-12 lg:gap-8 sm:grid-cols-2 lg:grid-cols-3">
         <div
-          v-for="(metric, i) in metrics"
+          v-for="(metric, i) in normalised"
           :key="metric.label"
           class="group relative flex flex-col p-1"
         >
           <div class="absolute -inset-1 bg-gradient-to-br opacity-0 group-hover:opacity-10 dark:group-hover:opacity-20 blur-xl transition duration-500" :class="metric.color"></div>
-          
+
           <div class="relative flex flex-col bg-white rounded-[40px] p-10 border border-outline-variant/10 shadow-sm transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
-            <div class="w-16 h-16 hex-mask flex items-center justify-center text-white mb-10 transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110" :class="metric.color">
+            <div class="w-16 h-16 hex-mask bg-gradient-to-br flex items-center justify-center text-white mb-10 transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110" :class="metric.color">
                <component :is="metric.icon" class="w-7 h-7" />
             </div>
 
             <p class="font-display text-5xl font-bold tracking-tighter text-on-surface mb-4">
               {{ formatNumber(displayed[i] ?? 0) }}<span class="text-primary">{{ metric.suffix }}</span>
             </p>
-            
+
             <p class="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-4">
               {{ metric.label }}
             </p>
-            
+
             <p class="font-body text-sm leading-relaxed text-on-surface-variant opacity-60">
               {{ metric.description }}
             </p>
@@ -146,4 +176,3 @@ function formatNumber(n: number) {
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
 }
 </style>
-te>

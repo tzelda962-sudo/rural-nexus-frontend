@@ -2,107 +2,123 @@
   <div class="flex flex-col">
     <!-- Hero Section -->
     <section class="relative min-h-[90vh] flex items-center justify-center bg-primary-container overflow-hidden">
-      <!-- Background Graphic Overlay simulating nature/agriculture placeholder -->
       <div class="absolute inset-0 z-0 opacity-20">
-        <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=2560&q=80" alt="Agriculture Background" class="w-full h-full object-cover mix-blend-overlay" />
+        <img
+          :src="page?.hero?.backgroundImage?.url ?? 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=2560&q=80'"
+          alt="Agriculture Background"
+          class="w-full h-full object-cover mix-blend-overlay"
+        />
       </div>
-
-      <!-- Geometric overlays -->
       <div class="absolute top-1/4 left-10 w-64 h-64 border-4 border-leaf/30 rounded-lg transform rotate-12 pointer-events-none animate-floaty"></div>
       <div class="absolute bottom-1/4 right-10 w-96 h-96 hex-mask bg-cyan/10 pointer-events-none"></div>
 
-      <!-- Hero Content -->
       <div class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
         <div class="mb-6 flex flex-wrap justify-center gap-2 text-[10px] uppercase tracking-[0.3em] font-bold text-leaf animate-floaty">
-          <span>Action Research</span> • 
-          <span>Sustainable Innovation</span> • 
-          <span>Development</span> • 
-          <span>Food Systems</span>
+          <template v-for="(tag, i) in page?.hero?.eyebrowTags ?? []" :key="i">
+            <span>{{ tag.value }}</span>
+            <span v-if="i < (page?.hero?.eyebrowTags?.length ?? 1) - 1"> • </span>
+          </template>
         </div>
         <h1 class="font-display font-bold text-5xl md:text-7xl leading-[1.1] mb-8 balance">
-          Transformative Action research for <br/>
-          <span class="text-transparent bg-clip-text bg-gradient-to-r from-leaf to-cyan italic">sustainable innovations</span> <br/>
-          from projects to impacts
+          {{ page?.hero?.headlineLine1 }} <br/>
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-leaf to-cyan italic">{{ page?.hero?.headlineEmphasis }}</span> <br/>
+          {{ page?.hero?.headlineLine2 }}
         </h1>
         <p class="font-body text-lg md:text-xl text-surface-dim max-w-3xl mx-auto mb-12 leading-relaxed opacity-90">
-          Advancing UN sustainable development goals to build resilient food systems through inter-trans-disciplinary research and strategic consultancy.
+          {{ page?.hero?.subtitle }}
         </p>
         <div class="flex flex-col sm:flex-row gap-6 justify-center">
-          <NuxtLink to="/programs" class="group px-10 py-5 bg-gradient-to-br from-primary to-primary-container text-white rounded-2xl font-bold hover:shadow-2xl hover:shadow-primary/30 transition-all flex items-center gap-3">
-            Explore Our Programs
+          <NuxtLink
+            :to="page?.hero?.primaryCta?.path ?? '/programs'"
+            class="group px-10 py-5 bg-gradient-to-br from-primary to-primary-container text-white rounded-2xl font-bold hover:shadow-2xl hover:shadow-primary/30 transition-all flex items-center gap-3"
+          >
+            {{ page?.hero?.primaryCta?.label ?? 'Explore Our Programs' }}
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </NuxtLink>
-          <NuxtLink to="/about" class="px-10 py-5 border border-white/20 text-white rounded-2xl font-bold hover:bg-white/5 transition-all backdrop-blur-sm">
-            Who We Are
+          <NuxtLink
+            :to="page?.hero?.secondaryCta?.path ?? '/about'"
+            class="px-10 py-5 border border-white/20 text-white rounded-2xl font-bold hover:bg-white/5 transition-all backdrop-blur-sm"
+          >
+            {{ page?.hero?.secondaryCta?.label ?? 'Who We Are' }}
           </NuxtLink>
         </div>
       </div>
     </section>
 
-    <!-- Who We Are Section (New) -->
+    <!-- Who We Are Section -->
     <section class="py-24 bg-surface text-on-surface relative overflow-hidden">
-      <!-- Decorative Hex -->
       <div class="absolute -right-24 top-1/2 w-64 h-64 hex-mask bg-primary opacity-5 transform -translate-y-1/2"></div>
-      
+
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div>
-            <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-6">Global Identity</p>
+            <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-6">
+              {{ page?.whoWeAre?.eyebrow ?? 'Global Identity' }}
+            </p>
             <h2 class="font-display font-bold text-4xl lg:text-5xl mb-8 leading-tight tracking-tight">
-              Who We Are: <br/>An <span class="text-leaf-600 italic">International Network</span> of Excellence
+              {{ page?.whoWeAre?.headingLine1 }} <br/>
+              {{ page?.whoWeAre?.headingLine2Prefix }}
+              <span class="text-leaf-600 italic"> {{ page?.whoWeAre?.headingLine2Emphasis }}</span>
+              {{ page?.whoWeAre?.headingLine2Suffix }}
             </h2>
             <p class="text-lg text-on-surface-variant font-body mb-8 leading-relaxed opacity-80">
-              RuralNexus is more than just an NGO; it is a decentralized ecosystem of researchers, agronomists, and project managers. We operate through specialized cells to bridge the gap between academic innovation and field implementation.
+              {{ page?.whoWeAre?.body }}
             </p>
             <div class="grid grid-cols-2 gap-8 mb-10">
-              <div>
-                <p class="text-4xl font-display font-bold text-primary mb-2">240+</p>
-                <p class="text-sm font-bold text-on-surface-variant uppercase tracking-widest opacity-60">Research Fellows</p>
-              </div>
-              <div>
-                <p class="text-4xl font-display font-bold text-cyan mb-2">12</p>
-                <p class="text-sm font-bold text-on-surface-variant uppercase tracking-widest opacity-60">Field Hubs</p>
+              <div v-for="stat in page?.whoWeAre?.stats ?? []" :key="stat.label">
+                <p class="text-4xl font-display font-bold text-primary mb-2">{{ stat.value }}</p>
+                <p class="text-sm font-bold text-on-surface-variant uppercase tracking-widest opacity-60">{{ stat.label }}</p>
               </div>
             </div>
-            <NuxtLink to="/about" class="inline-flex items-center gap-3 text-primary font-bold text-sm tracking-[0.2em] uppercase hover:text-primary-container transition-all group">
-              Meet the Leadership
+            <NuxtLink
+              :to="page?.whoWeAre?.ctaPath ?? '/about'"
+              class="inline-flex items-center gap-3 text-primary font-bold text-sm tracking-[0.2em] uppercase hover:text-primary-container transition-all group"
+            >
+              {{ page?.whoWeAre?.ctaLabel ?? 'Meet the Leadership' }}
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </NuxtLink>
           </div>
           <div class="relative">
-             <div class="aspect-square bg-surface-container-low rounded-[60px] overflow-hidden hex-mask shadow-2xl relative z-10">
-               <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Rural Innovation" class="w-full h-full object-cover" />
-             </div>
-             <!-- Floating Badge -->
-             <div class="absolute -bottom-10 -left-10 bg-white p-8 rounded-3xl shadow-xl z-20 max-w-[240px]">
-               <div class="flex items-center gap-3 mb-4">
-                 <div class="w-10 h-10 bg-leaf rounded-full flex items-center justify-center text-white">
-                   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-                 </div>
-                 <span class="font-bold text-sm text-on-surface">Scientific Rigor</span>
-               </div>
-               <p class="text-xs text-on-surface-variant font-body">Our transdisciplinary methodology is strictly mapped to UN SDG frameworks.</p>
-             </div>
+            <div class="aspect-square bg-surface-container-low rounded-[60px] overflow-hidden hex-mask shadow-2xl relative z-10">
+              <img
+                :src="page?.whoWeAre?.image?.url ?? 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'"
+                alt="Rural Innovation"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <!-- Floating Badge -->
+            <div class="absolute -bottom-10 -left-10 bg-white p-8 rounded-3xl shadow-xl z-20 max-w-[240px]">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-leaf rounded-full flex items-center justify-center text-white">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                </div>
+                <span class="font-bold text-sm text-on-surface">{{ page?.whoWeAre?.floatingBadge?.title ?? 'Scientific Rigor' }}</span>
+              </div>
+              <p class="text-xs text-on-surface-variant font-body">{{ page?.whoWeAre?.floatingBadge?.body }}</p>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Success Stories & Testimonials -->
+    <!-- Testimonials -->
     <section class="py-24 bg-surface-container-low">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 class="font-display font-bold text-4xl mb-12 tracking-tight">"They say about us"</h2>
+        <h2 class="font-display font-bold text-4xl mb-12 tracking-tight">
+          {{ page?.testimonialsSection?.heading ?? '"They say about us"' }}
+        </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div v-for="i in 3" :key="i" class="p-10 bg-surface rounded-[40px] shadow-sm hover:shadow-xl transition-all text-left group">
+          <div v-for="t in (testimonialsData?.docs ?? [])" :key="t.id" class="p-10 bg-surface rounded-[40px] shadow-sm hover:shadow-xl transition-all text-left group">
             <svg class="h-10 w-10 text-amber mb-8 opacity-30 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
-            <p class="font-body text-on-surface-variant text-lg italic mb-10 leading-relaxed">"RuralNexus provided the structural glue needed to transition our local farming initiative into an internationally funded project. Their transdisciplinary methodology is unmatched."</p>
+            <p class="font-body text-on-surface-variant text-lg italic mb-10 leading-relaxed">"{{ t.quote }}"</p>
             <div class="flex items-center gap-4">
-              <div class="w-12 h-12 bg-surface-container-high rounded-full overflow-hidden grayscale group-hover:grayscale-0 transition-all">
-                <div class="w-full h-full bg-gradient-to-br from-primary/20 to-cyan/20"></div>
+              <div class="w-12 h-12 rounded-full overflow-hidden grayscale group-hover:grayscale-0 transition-all">
+                <img v-if="t.avatar?.url" :src="t.avatar.url" :alt="t.name" class="w-full h-full object-cover" />
+                <div v-else class="w-full h-full bg-gradient-to-br from-primary/20 to-cyan/20"></div>
               </div>
               <div>
-                <p class="font-bold text-on-surface">Dr. Placeholder Name</p>
-                <p class="text-xs uppercase tracking-widest text-primary font-bold mt-1">Director, Agritech Cooperative {{i}}</p>
+                <p class="font-bold text-on-surface">{{ t.name }}</p>
+                <p class="text-xs uppercase tracking-widest text-primary font-bold mt-1">{{ [t.title, t.organization].filter(Boolean).join(', ') }}</p>
               </div>
             </div>
           </div>
@@ -112,26 +128,24 @@
 
     <!-- News & Highlights -->
     <section class="py-24 bg-surface relative overflow-hidden">
-      <!-- Watermark -->
       <div class="absolute -left-32 top-0 w-[500px] h-[500px] hex-mask bg-surface-container-highest opacity-50 pointer-events-none"></div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <h2 class="font-display font-bold text-4xl mb-12 tracking-tight">Latest Insights & Reports</h2>
-        
+        <h2 class="font-display font-bold text-4xl mb-12 tracking-tight">
+          {{ page?.newsSection?.heading ?? 'Latest Insights & Reports' }}
+        </h2>
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          <!-- Left Col: Latest News -->
           <div class="lg:col-span-7 flex flex-col gap-4">
-            <NewsCard 
-              v-for="event in homeData?.latestEvents" 
-              :key="event.id" 
-              :event="event" 
+            <NewsCard
+              v-for="event in latestEvents"
+              :key="event.id"
+              :event="event"
             />
           </div>
-
-          <!-- Right Col: Highlights -->
           <div class="lg:col-span-5 flex flex-col gap-6">
-            <div 
-              v-for="highlight in homeData?.highlightEvents" 
+            <div
+              v-for="highlight in highlights"
               :key="highlight.id"
               class="p-10 rounded-[40px] bg-gradient-to-br from-primary-container to-primary text-white shadow-2xl relative overflow-hidden group"
             >
@@ -141,8 +155,8 @@
               </span>
               <h3 class="font-display font-bold text-2xl mb-4 leading-snug">{{ highlight.title }}</h3>
               <p class="opacity-80 font-body text-sm leading-relaxed mb-6">{{ highlight.summary }}</p>
-              <NuxtLink :to="`/events?id=${highlight.id}`" class="text-xs font-bold uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
-                Read Abstract <span>&rarr;</span>
+              <NuxtLink :to="`/news/${(highlight as any).slug ?? highlight.id}`" class="text-xs font-bold uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
+                Read Article <span>&rarr;</span>
               </NuxtLink>
             </div>
           </div>
@@ -150,64 +164,58 @@
       </div>
     </section>
 
-
     <!-- Mission & SDGs -->
     <section class="py-24 bg-navy text-white relative overflow-hidden">
-      <!-- Decoratives -->
       <div class="absolute -right-20 top-20 w-64 h-64 hex-mask bg-cyan/10 animate-floaty"></div>
-      
+
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div>
-          <h2 class="font-display font-bold text-4xl mb-6">Aligned with the Global Goals</h2>
+          <h2 class="font-display font-bold text-4xl mb-6">
+            {{ page?.missionSdgSection?.heading ?? 'Aligned with the Global Goals' }}
+          </h2>
           <p class="font-body text-lg opacity-80 mb-8 leading-relaxed">
-            Every programmatic area within our operational hub is strictly mapped to the United Nations Sustainable Development Goals. We don't just talk about sustainability; we build actionable frameworks that deliver measurable impact across the most vulnerable rural regions.
+            {{ page?.missionSdgSection?.body }}
           </p>
-          <NuxtLink to="/research" class="inline-flex items-center gap-2 border-b-2 border-leaf pb-1 font-bold hover:text-leaf transition-colors text-lg">
-            Read our 2026 Impact Report &rarr;
+          <NuxtLink
+            :to="page?.missionSdgSection?.ctaPath ?? '/research'"
+            class="inline-flex items-center gap-2 border-b-2 border-leaf pb-1 font-bold hover:text-leaf transition-colors text-lg"
+          >
+            {{ page?.missionSdgSection?.ctaLabel ?? 'Read our 2026 Impact Report →' }}
           </NuxtLink>
         </div>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <!-- SDG Blocks -->
-          <div class="aspect-square bg-[#E5243B] p-4 flex flex-col justify-between hover:-translate-y-1 transition-transform cursor-default">
-            <span class="font-bold text-xl">1</span>
-            <span class="font-display font-bold text-sm uppercase leading-tight">No Poverty</span>
-          </div>
-          <div class="aspect-square bg-[#DDA63A] p-4 flex flex-col justify-between hover:-translate-y-1 transition-transform cursor-default">
-            <span class="font-bold text-xl">2</span>
-            <span class="font-display font-bold text-sm uppercase leading-tight">Zero Hunger</span>
-          </div>
-          <div class="aspect-square bg-[#4C9F38] p-4 flex flex-col justify-between hover:-translate-y-1 transition-transform cursor-default">
-            <span class="font-bold text-xl">3</span>
-            <span class="font-display font-bold text-sm uppercase leading-tight">Good Health</span>
-          </div>
-          <div class="aspect-square bg-[#C5192D] p-4 flex flex-col justify-between hover:-translate-y-1 transition-transform cursor-default">
-            <span class="font-bold text-xl">4</span>
-            <span class="font-display font-bold text-sm uppercase leading-tight">Quality Education</span>
-          </div>
-          <div class="aspect-square bg-[#3F7E44] p-4 flex flex-col justify-between hover:-translate-y-1 transition-transform cursor-default">
-            <span class="font-bold text-xl">13</span>
-            <span class="font-display font-bold text-sm uppercase leading-tight">Climate Action</span>
-          </div>
-          <div class="aspect-square bg-[#56C02B] p-4 flex flex-col justify-between hover:-translate-y-1 transition-transform cursor-default">
-            <span class="font-bold text-xl">15</span>
-            <span class="font-display font-bold text-sm uppercase leading-tight">Life on Land</span>
+          <div
+            v-for="sdg in page?.missionSdgSection?.featuredSdgs ?? []"
+            :key="sdg.goal"
+            class="aspect-square p-4 flex flex-col justify-between hover:-translate-y-1 transition-transform cursor-default"
+            :style="{ backgroundColor: SDG_COLORS[sdg.goal] ?? '#555' }"
+          >
+            <span class="font-bold text-xl text-white">{{ sdg.goal }}</span>
+            <span class="font-display font-bold text-sm uppercase leading-tight text-white">{{ SDG_NAMES[sdg.goal] }}</span>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Network / Partners -->
+    <!-- Partners -->
     <section class="py-16 bg-surface-container-lowest border-t border-b border-surface-variant">
       <div class="max-w-7xl mx-auto px-4 text-center overflow-hidden">
-        <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-10">Collaborating with global leaders & research institutions</p>
-        
+        <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-10">
+          {{ page?.partnersSection?.heading ?? 'Collaborating with global leaders & research institutions' }}
+        </p>
+
         <div class="flex animate-[pulse_4s_ease-in-out_infinite] gap-12 sm:gap-24 opacity-50 grayscale justify-center flex-wrap">
-          <div class="font-display font-black text-2xl flex items-center gap-2"><div class="w-6 h-6 bg-current rounded-full"></div> EcoAgri EU</div>
-          <div class="font-display font-bold text-2xl tracking-tighter">GLOBAL HORIZON</div>
-          <div class="font-display font-light text-2xl italic tracking-wider">Hohenheim Institute</div>
-          <div class="font-display font-extrabold text-2xl uppercase">UN FAO Data</div>
-          <div class="font-display font-bold text-2xl flex items-center gap-2 text-primary">AgroNexus</div>
+          <div
+            v-for="partner in page?.partnersSection?.partners ?? []"
+            :key="partner.name"
+            class="font-display font-bold text-2xl flex items-center gap-2"
+          >
+            <div v-if="partner.logoImage?.url" class="h-8 w-auto">
+              <img :src="partner.logoImage.url" :alt="partner.name" class="h-full w-auto object-contain" />
+            </div>
+            <span v-else>{{ partner.name }}</span>
+          </div>
         </div>
       </div>
     </section>
@@ -215,17 +223,90 @@
 </template>
 
 <script setup lang="ts">
-import { useAsyncData } from '#imports';
-import { GetHomeDataUseCase } from '@application/use_cases/GetHomeDataUseCase';
-import { MockProgramAreaRepository } from '@infrastructure/repositories/MockProgramAreaRepository';
-import { MockNewsEventRepository } from '@infrastructure/repositories/MockNewsEventRepository';
-import { MockTeamRepository } from '@infrastructure/repositories/MockTeamRepository';
+import { computed } from 'vue'
+import { useAsyncData } from '#imports'
+import { GetHomeDataUseCase } from '@application/use_cases/GetHomeDataUseCase'
+import { HttpProgramAreaRepository } from '@infrastructure/repositories/HttpProgramAreaRepository'
+import { HttpNewsEventRepository } from '@infrastructure/repositories/HttpNewsEventRepository'
+import { MockTeamRepository } from '@infrastructure/repositories/MockTeamRepository'
+import { usePayloadLivePreview } from '../composables/usePayloadLivePreview'
 
-// Setup dependencies (Normally via DI container)
-const paRepo = new MockProgramAreaRepository();
-const newsRepo = new MockNewsEventRepository();
-const teamRepo = new MockTeamRepository();
-const useCase = new GetHomeDataUseCase(paRepo, newsRepo, teamRepo);
+const config = useRuntimeConfig()
+const apiBase = config.public.apiBase as string
 
-const { data: homeData } = await useAsyncData('homeData', () => useCase.execute());
+const SDG_COLORS: Record<number, string> = {
+  1: '#E5243B', 2: '#DDA63A', 3: '#4C9F38', 4: '#C5192D', 5: '#FF3A21',
+  6: '#26BDE2', 7: '#FCC30B', 8: '#A21942', 9: '#FD6925', 10: '#DD1367',
+  11: '#FD9D24', 12: '#BF8B2E', 13: '#3F7E44', 14: '#0A97D9', 15: '#56C02B',
+  16: '#00689D', 17: '#19486A',
+}
+const SDG_NAMES: Record<number, string> = {
+  1: 'No Poverty', 2: 'Zero Hunger', 3: 'Good Health', 4: 'Quality Education',
+  5: 'Gender Equality', 6: 'Clean Water', 7: 'Affordable Energy', 8: 'Decent Work',
+  9: 'Industry & Innovation', 10: 'Reduced Inequalities', 11: 'Sustainable Cities',
+  12: 'Responsible Consumption', 13: 'Climate Action', 14: 'Life Below Water',
+  15: 'Life on Land', 16: 'Peace & Justice', 17: 'Partnerships for Goals',
+}
+
+type HomePageGlobal = {
+  hero?: {
+    eyebrowTags?: { value: string }[]
+    headlineLine1?: string; headlineEmphasis?: string; headlineLine2?: string
+    subtitle?: string
+    backgroundImage?: { url?: string } | null
+    primaryCta?: { label?: string; path?: string }
+    secondaryCta?: { label?: string; path?: string }
+  }
+  whoWeAre?: {
+    eyebrow?: string
+    headingLine1?: string; headingLine2Prefix?: string
+    headingLine2Emphasis?: string; headingLine2Suffix?: string
+    body?: string
+    stats?: { value: string; label: string }[]
+    ctaLabel?: string; ctaPath?: string
+    image?: { url?: string } | null
+    floatingBadge?: { title?: string; body?: string }
+  }
+  testimonialsSection?: { heading?: string }
+  newsSection?: { heading?: string; latestEventsCount?: number; highlightsCount?: number }
+  missionSdgSection?: {
+    heading?: string; body?: string; ctaLabel?: string; ctaPath?: string
+    featuredSdgs?: { goal: number }[]
+  }
+  partnersSection?: {
+    heading?: string
+    partners?: { name: string; style?: string; logoImage?: { url?: string } | null }[]
+  }
+}
+
+type Testimonial = {
+  id: string; quote: string; name: string; title?: string | null
+  organization?: string | null; avatar?: { url?: string } | null
+}
+
+// Three fetches run in parallel on SSR
+const [{ data: pageData }, { data: homeData }, { data: testimonialsData }] = await Promise.all([
+  useAsyncData('home-page-global', () =>
+    $fetch<HomePageGlobal>(`${apiBase}/api/globals/home-page`),
+  ),
+  useAsyncData('homeData', () =>
+    new GetHomeDataUseCase(
+      new HttpProgramAreaRepository(apiBase),
+      new HttpNewsEventRepository(apiBase),
+      new MockTeamRepository(),
+    ).execute(),
+  ),
+  useAsyncData('testimonials', () =>
+    $fetch<{ docs: Testimonial[] }>(`${apiBase}/api/homepage-testimonials?limit=3&depth=1&sort=order`),
+  ),
+])
+
+const { previewData: page } = usePayloadLivePreview(pageData.value ?? {} as HomePageGlobal)
+
+const latestEvents = computed(() =>
+  (homeData.value?.latestEvents ?? []).slice(0, page.value?.newsSection?.latestEventsCount ?? 4),
+)
+const highlights = computed(() =>
+  (homeData.value?.highlightEvents ?? []).slice(0, page.value?.newsSection?.highlightsCount ?? 3),
+)
 </script>

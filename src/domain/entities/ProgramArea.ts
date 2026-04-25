@@ -1,6 +1,7 @@
 export interface ProgramArea {
   id: string;
   code: string; // e.g., 'PA1'
+  slug: string;
   title: string;
   description: string;
   icon: string;

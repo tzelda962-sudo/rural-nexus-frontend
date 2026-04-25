@@ -1,89 +1,61 @@
 <script setup lang="ts">
-import { 
-  MapPin, 
-  Clock, 
-  Calendar, 
-  ArrowRight, 
-  Plus, 
-  Quote 
-} from 'lucide-vue-next';
+import { computed } from 'vue';
+import { MapPin, Clock, Calendar, ArrowRight, Plus, Quote } from 'lucide-vue-next';
+import { usePayloadLivePreview } from '../composables/usePayloadLivePreview';
 
-useHead({ title: 'Field Stories — RuralNexus' });
-
-const featured = {
-  title: "Sovereignty Through shared Intelligence: The Andavadoaka Case",
-  excerpt:
-    "When the hand-pump failed in 2022, the woman of this coastal village walked six kilometres daily. We implemented a solar-filtered 'Intelligence Node' that changed everything.",
-  location: 'Andavadoaka, Madagascar',
-  program: 'Water Governance',
-  readTime: '8 min read',
-  author: 'Fanja Ratsimbazafy',
-  date: 'March 2026',
-  gradient: 'from-emerald-600 to-leaf-500',
+type StoriesPageGlobal = {
+  header: {
+    eyebrow?: string
+    headline?: string
+    body?: string
+  }
+  gridSection?: { heading?: string; body?: string }
+  seo?: { metaTitle?: string; metaDescription?: string; ogImage?: { url?: string } }
 }
 
-const stories = [
-  {
-    title: "'The forest is coming back': A decade of reforestation in Xingu",
-    excerpt:
-      'Indigenous partners have planted 250,000 native nodes since 2014. We spent a week witnessing the transdisciplinary regrowth.',
-    location: 'Xingu Basin, Brazil',
-    program: 'Climate Resilience',
-    readTime: '6 min read',
-    date: 'Feb 2026',
-    gradient: 'from-leaf-600 to-cyan-500',
-  },
-  {
-    title: 'Rebuilding Sindh: One Resilience Kit at a Time',
-    excerpt:
-      "Record monsoon rains displaced 4,500 families. A field update from our rapid-action response team six months into implementation.",
-    location: 'Sindh, Pakistan',
-    program: 'Strategic Response',
-    readTime: '5 min read',
-    date: 'Jan 2026',
-    gradient: 'from-cyan-600 to-emerald-500',
-  },
-  {
-    title: 'Beyond Ribbon-Cutting: Sustainable Education in Malawi',
-    excerpt:
-      'A hard lesson on what sustainable action research looks like in practice. Spoiler: it involves community governance, not just bricks.',
-    location: 'Kasungu, Malawi',
-    program: 'Capacity Building',
-    readTime: '7 min read',
-    date: 'Dec 2025',
-    gradient: 'from-leaf-500 to-emerald-700',
-  },
-  {
-    title: 'The Solar Nexus: Health Sovereignty in Kisumu',
-    excerpt:
-      'Five years later, the maternal health node remains self-sustaining—powered by sunlight and community-led operational protocols.',
-    location: 'Kisumu, Kenya',
-    program: 'Biosocial Health',
-    readTime: '6 min read',
-    date: 'Dec 2025',
-    gradient: 'from-emerald-800 to-leaf-600',
-  },
-  {
-    title: 'Listening Protocols: Innovations in the Andes',
-    excerpt:
-      'Our regional manager on why the first phase of any nexus project involves zero construction and massive community dialogue.',
-    location: 'Cusco, Peru',
-    program: 'Food Systems',
-    readTime: '4 min read',
-    date: 'Nov 2025',
-    gradient: 'from-leaf-700 to-emerald-600',
-  },
-  {
-    title: 'Meet the Partners: Association Tanjona',
-    excerpt:
-      'A deep-dive conversation with the Madagascan collective that co-manages 70% of our water sovereignty work.',
-    location: 'Antananarivo, Madagascar',
-    program: 'Strategic Partnerships',
-    readTime: '5 min read',
-    date: 'Nov 2025',
-    gradient: 'from-cyan-400 to-leaf-500',
-  },
-]
+const config = useRuntimeConfig()
+const apiBase = config.public.apiBase as string
+
+type PayloadStory = {
+  id: string; title: string; slug: string; excerpt: string; location: string
+  program: string; readTime: string; date: string; author?: string | null
+  isFeatured: boolean; gradient?: string | null; image?: { url?: string } | null
+}
+
+const [{ data: rawPage }, { data: storiesData }] = await Promise.all([
+  useAsyncData('stories-page-global', () =>
+    $fetch<StoriesPageGlobal>(`${apiBase}/api/globals/stories-page`),
+  ),
+  useAsyncData('stories', () =>
+    $fetch<{ docs: PayloadStory[] }>(`${apiBase}/api/stories?limit=50&depth=1&sort=-date`),
+  ),
+])
+
+const { previewData: pageData } = usePayloadLivePreview(rawPage.value ?? {} as StoriesPageGlobal)
+
+useHead({
+  title: () => pageData.value?.seo?.metaTitle ?? 'Field Stories — RuralNexus',
+  meta: [
+    { name: 'description', content: () => pageData.value?.seo?.metaDescription ?? '' },
+    { property: 'og:image', content: () => pageData.value?.seo?.ogImage?.url ?? '' },
+  ],
+})
+
+function storyDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+}
+
+const featured = computed(() => {
+  const f = storiesData.value?.docs.find(s => s.isFeatured)
+  if (!f) return null
+  return { ...f, date: storyDate(f.date), gradient: f.gradient ?? 'from-emerald-600 to-leaf-500' }
+})
+
+const stories = computed(() =>
+  (storiesData.value?.docs ?? [])
+    .filter(s => !s.isFeatured)
+    .map(s => ({ ...s, date: storyDate(s.date), gradient: s.gradient ?? 'from-primary to-leaf-600' })),
+)
 </script>
 
 <template>
@@ -96,19 +68,19 @@ const stories = [
 
       <div class="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8 relative z-10">
         <p class="text-[10px] font-bold uppercase tracking-[0.4em] text-primary mb-4">
-          Field Dispatches
+          {{ pageData?.header?.eyebrow ?? 'Field Dispatches' }}
         </p>
         <h1 class="font-display text-5xl md:text-6xl font-bold tracking-tight text-on-surface mb-8">
-          Voices <span class="text-primary italic">from the Nexus.</span>
+          {{ pageData?.header?.headline ?? 'Voices from the Nexus.' }}
         </h1>
         <p class="text-lg md:text-xl text-on-surface-variant font-body leading-relaxed max-w-2xl mx-auto opacity-70">
-          First-hand dispatches from our fellows and regional partners—documenting the transdisciplinary journey toward community sovereignty.
+          {{ pageData?.header?.body ?? 'First-hand dispatches from our fellows and regional partners—documenting the transdisciplinary journey toward community sovereignty.' }}
         </p>
       </div>
     </section>
 
     <!-- Featured Masterpiece Card -->
-    <section class="bg-white pb-24">
+    <section v-if="featured" class="bg-white pb-24">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <article class="group grid overflow-hidden rounded-[48px] border border-outline-variant/10 bg-white shadow-sm hover:shadow-2xl transition-all duration-700 lg:grid-cols-2">
           <div
@@ -125,35 +97,35 @@ const stories = [
               </span>
             </div>
           </div>
-          
+
           <div class="flex flex-col justify-center p-10 sm:p-14 lg:p-20">
             <div class="flex flex-wrap items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-primary mb-8">
-              <span>{{ featured.program }}</span>
+              <span>{{ featured?.program }}</span>
               <span class="h-1 w-1 rounded-full bg-primary/30" />
-              <span class="flex items-center gap-1.5"><MapPin class="w-3 h-3" /> {{ featured.location }}</span>
+              <span class="flex items-center gap-1.5"><MapPin class="w-3 h-3" /> {{ featured?.location }}</span>
               <span class="h-1 w-1 rounded-full bg-primary/30" />
-              <span class="flex items-center gap-1.5"><Clock class="w-3 h-3" /> {{ featured.readTime }}</span>
+              <span class="flex items-center gap-1.5"><Clock class="w-3 h-3" /> {{ featured?.readTime }}</span>
             </div>
-            
+
             <h2 class="font-display text-3xl md:text-4xl font-bold leading-tight text-on-surface mb-6">
-              {{ featured.title }}
+              {{ featured?.title }}
             </h2>
             <p class="text-base md:text-lg leading-relaxed text-on-surface-variant font-body opacity-70 mb-10">
-              {{ featured.excerpt }}
+              {{ featured?.excerpt }}
             </p>
-            
+
             <div class="flex items-center justify-between mt-auto pt-10 border-t border-outline-variant/5">
               <div class="flex items-center gap-4">
                 <div class="w-12 h-12 hex-mask bg-primary/10 flex items-center justify-center text-primary font-bold">
-                   {{ featured.author.charAt(0) }}
+                   {{ featured?.author?.charAt(0) ?? 'R' }}
                 </div>
                 <div>
-                  <p class="text-sm font-bold text-on-surface">{{ featured.author }}</p>
-                  <p class="text-xs text-on-surface-variant font-medium opacity-50">{{ featured.date }}</p>
+                  <p class="text-sm font-bold text-on-surface">{{ featured?.author ?? 'RuralNexus' }}</p>
+                  <p class="text-xs text-on-surface-variant font-medium opacity-50">{{ featured?.date }}</p>
                 </div>
               </div>
               <NuxtLink
-                to="#"
+                :to="featured ? `/stories/${featured.slug}` : '#'"
                 class="inline-flex items-center gap-3 rounded-2xl bg-primary px-8 py-4 text-xs font-bold uppercase tracking-widest text-white shadow-xl shadow-primary/20 transition hover:scale-105"
               >
                 Read Story
@@ -171,10 +143,10 @@ const stories = [
         <div class="flex flex-col md:flex-row items-end justify-between mb-16 gap-8">
           <div class="max-w-xl">
              <h2 class="font-display text-3xl font-bold tracking-tight text-on-surface mb-4">
-              More from <span class="italic text-primary">the Ground</span>
+              {{ pageData?.gridSection?.heading ?? 'More from the Ground' }}
             </h2>
             <p class="text-sm text-on-surface-variant font-body opacity-60">
-              A curated selection of dispatches from our global node network, documenting sustainable breakthroughs and lessons learned.
+              {{ pageData?.gridSection?.body ?? 'A curated selection of dispatches from our global node network, documenting sustainable breakthroughs and lessons learned.' }}
             </p>
           </div>
           <button
@@ -188,7 +160,7 @@ const stories = [
         <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           <article
             v-for="story in stories"
-            :key="story.title"
+            :key="story.slug"
             class="group flex h-full flex-col overflow-hidden rounded-[40px] bg-white shadow-sm ring-1 ring-outline-variant/5 transition hover:-translate-y-2 hover:shadow-2xl"
           >
             <div
@@ -206,7 +178,7 @@ const stories = [
                 {{ story.location }}
               </div>
             </div>
-            
+
             <div class="flex flex-1 flex-col p-8 lg:p-10">
               <h3 class="font-display text-xl font-bold leading-tight text-on-surface mb-4 group-hover:text-primary transition-colors">
                 {{ story.title }}
@@ -214,10 +186,12 @@ const stories = [
               <p class="mt-2 flex-1 text-sm leading-relaxed text-on-surface-variant font-body opacity-60 mb-10">
                 {{ story.excerpt }}
               </p>
-              
+
               <div class="mt-auto flex items-center justify-between text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest border-t border-outline-variant/5 pt-8">
                 <span class="flex items-center gap-2"><Calendar class="w-3.5 h-3.5" /> {{ story.date }}</span>
-                <span class="flex items-center gap-2"><Clock class="w-3.5 h-3.5" /> {{ story.readTime }}</span>
+                <NuxtLink :to="`/stories/${story.slug}`" class="flex items-center gap-2 text-primary hover:opacity-70 transition-opacity">
+                  <Clock class="w-3.5 h-3.5" /> {{ story.readTime }}
+                </NuxtLink>
               </div>
             </div>
           </article>

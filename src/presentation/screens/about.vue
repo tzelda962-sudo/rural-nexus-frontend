@@ -4,14 +4,14 @@
     <section class="py-24 bg-surface-container-low text-on-surface relative overflow-hidden">
       <!-- Background Graphic -->
       <div class="absolute top-0 right-0 w-1/3 h-full hex-mask bg-primary opacity-5 -mr-24 -mt-12"></div>
-      
+
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <p class="text-sm font-bold uppercase tracking-widest text-primary mb-4">Our Leadership</p>
+        <p class="text-sm font-bold uppercase tracking-widest text-primary mb-4">{{ pageData?.header?.eyebrow ?? 'Our Leadership' }}</p>
         <h1 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-8 leading-tight tracking-tight">
-          Who We Are
+          {{ pageData?.header?.headlineLine1 ?? 'Who We Are' }}<span v-if="pageData?.header?.headlineEmphasis" class="text-primary italic"> {{ pageData.header.headlineEmphasis }}</span>
         </h1>
         <p class="text-lg md:text-xl text-on-surface-variant max-w-3xl font-body leading-relaxed">
-          RuralNexus is an international network of researchers, agronomists, and project managers dedicated to empowering rural resilience through evidence-based innovation.
+          {{ pageData?.header?.body ?? 'RuralNexus is an international network of researchers, agronomists, and project managers dedicated to empowering rural resilience through evidence-based innovation.' }}
         </p>
       </div>
     </section>
@@ -21,13 +21,13 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div class="max-w-2xl">
-            <h2 class="text-3xl lg:text-4xl font-display font-bold mb-4">Our International Team</h2>
+            <h2 class="text-3xl lg:text-4xl font-display font-bold mb-4">{{ pageData?.teamSection?.heading ?? 'Our International Team' }}</h2>
             <p class="text-on-surface-variant font-body leading-relaxed">
-              RuralNexus operates through a decentralized network of specialized program acquisition cells (PACs) and field technical hubs.
+              {{ pageData?.teamSection?.body ?? 'RuralNexus operates through a decentralized network of specialized program acquisition cells (PACs) and field technical hubs.' }}
             </p>
           </div>
         </div>
-        
+
         <!-- The New Explorer -->
         <div v-if="allMembers">
           <OrgExplorer :members="allMembers" />
@@ -44,7 +44,38 @@
 import { useAsyncData } from '#imports';
 import { MockTeamRepository } from '@infrastructure/repositories/MockTeamRepository';
 import OrgExplorer from '../components/OrgExplorer.vue';
+import { usePayloadLivePreview } from '../composables/usePayloadLivePreview';
+
+type AboutPageGlobal = {
+  header: {
+    eyebrow?: string
+    headlineLine1?: string
+    headlineEmphasis?: string
+    body?: string
+  }
+  teamSection?: { heading?: string; body?: string }
+  seo?: { metaTitle?: string; metaDescription?: string; ogImage?: { url?: string } }
+}
+
+const config = useRuntimeConfig()
+const apiBase = config.public.apiBase as string
 
 const teamRepo = new MockTeamRepository();
-const { data: allMembers } = await useAsyncData('teamData', () => teamRepo.getOrganigram());
+
+const [{ data: rawPage }, { data: allMembers }] = await Promise.all([
+  useAsyncData('about-page-global', () =>
+    $fetch<AboutPageGlobal>(`${apiBase}/api/globals/about-page`),
+  ),
+  useAsyncData('teamData', () => teamRepo.getOrganigram()),
+])
+
+const { previewData: pageData } = usePayloadLivePreview(rawPage.value ?? {} as AboutPageGlobal)
+
+useHead({
+  title: () => pageData.value?.seo?.metaTitle ?? 'Who We Are — RuralNexus',
+  meta: [
+    { name: 'description', content: () => pageData.value?.seo?.metaDescription ?? '' },
+    { property: 'og:image', content: () => pageData.value?.seo?.ogImage?.url ?? '' },
+  ],
+})
 </script>

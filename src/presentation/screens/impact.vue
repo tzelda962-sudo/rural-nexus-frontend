@@ -1,5 +1,49 @@
 <script setup lang="ts">
-useHead({ title: 'Impact Metrics — RuralNexus' })
+import { usePayloadLivePreview } from '../composables/usePayloadLivePreview';
+
+type ImpactPageGlobal = {
+  header: {
+    eyebrow?: string
+    headlinePrefix?: string
+    headlineEmphasis?: string
+    body?: string
+  }
+  seo?: { metaTitle?: string; metaDescription?: string; ogImage?: { url?: string } }
+}
+
+type PayloadMetric = {
+  id: string
+  metric: string
+  value: string
+  unit?: string | null
+  description?: string | null
+  icon?: string | null
+  category?: string | null
+  trend?: 'up' | 'down' | 'stable' | null
+  order?: number
+}
+
+const config = useRuntimeConfig()
+const apiBase = config.public.apiBase as string
+
+const [{ data: rawPage }, { data: metricsData }] = await Promise.all([
+  useAsyncData('impact-page-global', () =>
+    $fetch<ImpactPageGlobal>(`${apiBase}/api/globals/impact-page`),
+  ),
+  useAsyncData('impact-metrics', () =>
+    $fetch<{ docs: PayloadMetric[] }>(`${apiBase}/api/impact-metrics?limit=50&depth=1&sort=order`),
+  ),
+])
+
+const { previewData: pageData } = usePayloadLivePreview(rawPage.value ?? {} as ImpactPageGlobal)
+
+useHead({
+  title: () => pageData.value?.seo?.metaTitle ?? 'Impact Metrics — RuralNexus',
+  meta: [
+    { name: 'description', content: () => pageData.value?.seo?.metaDescription ?? '' },
+    { property: 'og:image', content: () => pageData.value?.seo?.ogImage?.url ?? '' },
+  ],
+})
 </script>
 
 <template>
@@ -7,18 +51,18 @@ useHead({ title: 'Impact Metrics — RuralNexus' })
     <!-- Premium Header -->
     <section class="mx-auto max-w-7xl px-4 pt-32 pb-16 sm:px-6 lg:px-8">
       <div class="max-w-3xl">
-        <p class="text-[10px] font-bold uppercase tracking-[0.4em] text-primary mb-6">Quantifiable Change</p>
+        <p class="text-[10px] font-bold uppercase tracking-[0.4em] text-primary mb-6">{{ pageData?.header?.eyebrow ?? 'Quantifiable Change' }}</p>
         <h1 class="font-display text-5xl md:text-6xl font-bold tracking-tight text-on-surface mb-8">
-          The Intelligence <span class="text-primary italic">behind the mission.</span>
+          {{ pageData?.header?.headlinePrefix ?? 'The Intelligence' }} <span class="text-primary italic">{{ pageData?.header?.headlineEmphasis ?? 'behind the mission.' }}</span>
         </h1>
         <p class="font-body text-lg md:text-xl text-on-surface-variant opacity-70 leading-relaxed max-w-2xl">
-          We publish every outcome—from node health metrics to direct economic shifts—within our open intelligence network. Below is a snapshot of our evidence-based footprint.
+          {{ pageData?.header?.body ?? 'We publish every outcome—from node health metrics to direct economic shifts—within our open intelligence network. Below is a snapshot of our evidence-based footprint.' }}
         </p>
       </div>
     </section>
 
-    <ImpactMetrics />
-    
+    <ImpactMetrics :items="metricsData?.docs ?? []" />
+
     <!-- Verified Outcomes Section -->
     <section class="py-24 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -59,3 +103,9 @@ useHead({ title: 'Impact Metrics — RuralNexus' })
     </section>
   </div>
 </template>
+
+<style scoped>
+.hex-mask {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+</style>

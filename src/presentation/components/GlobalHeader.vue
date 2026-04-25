@@ -1,50 +1,60 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { 
-  Menu, X, Search, ChevronRight, ChevronDown, 
-  Layers, Rocket, Info, BarChart3, MessageSquareQuote, BookOpen 
+import {
+  Menu, X, Search, ChevronRight, ChevronDown,
+  Layers, Rocket, Info, BarChart3, MessageSquareQuote, BookOpen,
 } from 'lucide-vue-next';
 
-const isMenuOpen = ref(false);
-const isDropdownOpen = ref<string | null>(null);
+const router = useRouter()
+const isMenuOpen = ref(false)
+const isDropdownOpen = ref<string | null>(null)
+const isSearchOpen = ref(false)
+const searchQuery = ref('')
 
 const navLinks = [
   { name: 'Home', path: '/' },
-  { 
-    name: 'Who We Are', 
+  {
+    name: 'Who We Are',
     path: '#',
     children: [
       { name: 'Overview', path: '/about', desc: 'Our mission & vision', icon: Info },
       { name: 'Impact Metrics', path: '/impact', desc: 'Measurable outcomes', icon: BarChart3 },
-      { name: 'Field Stories', path: '/stories', desc: 'Voices from the ground', icon: MessageSquareQuote }
-    ]
+      { name: 'Field Stories', path: '/stories', desc: 'Voices from the ground', icon: MessageSquareQuote },
+    ],
   },
-  { 
-    name: 'What We Do', 
+  {
+    name: 'What We Do',
     path: '#',
     children: [
       { name: 'Our Programs', path: '/programs', desc: 'Core strategic pillars', icon: Layers },
       { name: 'Action Hub', path: '/events', desc: 'Projects & Publications', icon: Rocket },
-      { name: 'Research & Tools', path: '/research', desc: 'Methodological resources', icon: BookOpen }
-    ]
+      { name: 'Research & Tools', path: '/research', desc: 'Methodological resources', icon: BookOpen },
+    ],
   },
   { name: 'Gallery', path: '/gallery' },
-  { name: 'Volunteer', path: '/volunteer' },
-];
+]
 
 function toggleMenu() {
-  isMenuOpen.value = !isMenuOpen.value;
+  isMenuOpen.value = !isMenuOpen.value
   if (typeof document !== 'undefined') {
-    document.body.style.overflow = isMenuOpen.value ? 'hidden' : '';
+    document.body.style.overflow = isMenuOpen.value ? 'hidden' : ''
   }
 }
 
 function closeMenu() {
-  isMenuOpen.value = false;
-  isDropdownOpen.value = null;
+  isMenuOpen.value = false
+  isDropdownOpen.value = null
   if (typeof document !== 'undefined') {
-    document.body.style.overflow = '';
+    document.body.style.overflow = ''
   }
+}
+
+function submitSearch() {
+  const q = searchQuery.value.trim()
+  if (!q) return
+  isSearchOpen.value = false
+  searchQuery.value = ''
+  router.push(`/search?q=${encodeURIComponent(q)}`)
 }
 </script>
 
@@ -124,10 +134,32 @@ function closeMenu() {
         </nav>
 
         <!-- Right Actions -->
-        <div class="flex items-center relative z-50">
-          <button class="p-2 text-on-surface-variant hover:text-primary transition-colors hidden md:block">
-            <Search class="w-5 h-5" />
-          </button>
+        <div class="flex items-center gap-1 relative z-50">
+          <!-- Search toggle + inline input -->
+          <div class="hidden md:flex items-center gap-2">
+            <Transition
+              enter-active-class="transition duration-200 ease-out"
+              enter-from-class="opacity-0 w-0"
+              enter-to-class="opacity-100 w-48"
+            >
+              <input
+                v-if="isSearchOpen"
+                v-model="searchQuery"
+                type="text"
+                placeholder="Search..."
+                autofocus
+                class="w-48 px-4 py-2 text-sm bg-surface-container-low border border-outline-variant/20 rounded-xl outline-none focus:border-primary/40 transition-all"
+                @keyup.enter="submitSearch"
+                @keyup.esc="isSearchOpen = false; searchQuery = ''"
+              >
+            </Transition>
+            <button
+              class="p-2 text-on-surface-variant hover:text-primary transition-colors"
+              @click="isSearchOpen ? submitSearch() : (isSearchOpen = true)"
+            >
+              <Search class="w-5 h-5" />
+            </button>
+          </div>
           
           <div class="ml-4 hidden sm:block">
             <NuxtLink to="/contact" @click="closeMenu" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-bold uppercase tracking-widest rounded-xl text-white bg-primary hover:bg-primary-container shadow-xl shadow-primary/20 transition-all">
