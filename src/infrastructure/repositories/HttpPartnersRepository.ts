@@ -1,0 +1,63 @@
+export type Partner = {
+  id: string
+  name: string
+  abbreviation?: string
+  type: 'University' | 'Research Institute' | 'NGO' | 'Funding Agency'
+  continent: 'Europe' | 'Africa' | 'Global'
+  country: string
+  website?: string
+  description?: string
+  logo?: { url?: string } | null
+}
+
+export type TeamMemberApi = {
+  id: string
+  name: string
+  role: string
+  memberType: 'ceo' | 'pa-manager' | 'advisory' | 'staff'
+  bio?: string
+  expertise?: { skill: string }[]
+  avatar?: { url?: string } | null
+}
+
+export type InterventionCountry = {
+  name: string
+  isoCode: string
+  programs?: string
+}
+
+type PayloadList<T> = { docs: T[] }
+
+export class HttpPartnersRepository {
+  constructor(private readonly baseUrl: string) {}
+
+  async getAll(): Promise<Partner[]> {
+    const res = await $fetch<PayloadList<Partner>>(
+      `${this.baseUrl}/api/partners?limit=100&sort=continent,name&depth=1`,
+    )
+    return res.docs
+  }
+
+  async getByContinent(continent: 'Europe' | 'Africa' | 'Global'): Promise<Partner[]> {
+    const res = await $fetch<PayloadList<Partner>>(
+      `${this.baseUrl}/api/partners?where[continent][equals]=${continent}&limit=100&sort=name&depth=1`,
+    )
+    return res.docs
+  }
+
+  async getTeamByType(
+    memberType: 'ceo' | 'pa-manager' | 'advisory',
+  ): Promise<TeamMemberApi[]> {
+    const res = await $fetch<PayloadList<TeamMemberApi>>(
+      `${this.baseUrl}/api/team?where[memberType][equals]=${memberType}&limit=100&depth=1`,
+    )
+    return res.docs
+  }
+
+  async getInterventionCountries(): Promise<InterventionCountry[]> {
+    const res = await $fetch<{ interventionCountries?: InterventionCountry[] }>(
+      `${this.baseUrl}/api/globals/site-settings`,
+    )
+    return res.interventionCountries ?? []
+  }
+}

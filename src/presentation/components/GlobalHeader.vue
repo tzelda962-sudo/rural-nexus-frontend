@@ -18,6 +18,7 @@ const navLinks = [
     path: '#',
     children: [
       { name: 'Overview', path: '/about', desc: 'Our mission & vision', icon: Info },
+      { name: 'Our Network', path: '/network', desc: 'Team, partners & collaborators', icon: Network },
       { name: 'Impact Metrics', path: '/impact', desc: 'Measurable outcomes', icon: BarChart3 },
       { name: 'Field Stories', path: '/stories', desc: 'Voices from the ground', icon: MessageSquareQuote },
     ],
