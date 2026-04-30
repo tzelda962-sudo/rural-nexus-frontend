@@ -1,20 +1,47 @@
 <script setup lang="ts">
 import { useAsyncData } from '#imports';
 import { GetHomeDataUseCase } from '@application/use_cases/GetHomeDataUseCase';
-import { MockProgramAreaRepository } from '@infrastructure/repositories/MockProgramAreaRepository';
-import { MockNewsEventRepository } from '@infrastructure/repositories/MockNewsEventRepository';
+import { HttpProgramAreaRepository } from '@infrastructure/repositories/HttpProgramAreaRepository';
+import { HttpNewsEventRepository } from '@infrastructure/repositories/HttpNewsEventRepository';
 import { MockTeamRepository } from '@infrastructure/repositories/MockTeamRepository';
-import { Check, ArrowRight, Target, Globe, Zap, Layers } from 'lucide-vue-next';
+import { Check, ArrowRight, Globe, Layers } from 'lucide-vue-next';
+import { usePayloadLivePreview } from '../composables/usePayloadLivePreview';
 
-useHead({ title: 'Our Programs: Structural Glue — RuralNexus' });
+type ProgramsPageGlobal = {
+  header: {
+    eyebrow?: string
+    headlinePrefix?: string
+    headlineEmphasis?: string
+    body?: string
+  }
+  seo?: { metaTitle?: string; metaDescription?: string; ogImage?: { url?: string } }
+}
 
-const useCase = new GetHomeDataUseCase(
-  new MockProgramAreaRepository(),
-  new MockNewsEventRepository(),
-  new MockTeamRepository()
-);
+const config = useRuntimeConfig()
+const apiBase = config.public.apiBase as string
 
-const { data: homeData } = await useAsyncData('programsPillars', () => useCase.execute());
+const [{ data: rawPage }, { data: homeData }] = await Promise.all([
+  useAsyncData('programs-page-global', () =>
+    $fetch<ProgramsPageGlobal>(`${apiBase}/api/globals/programs-page`),
+  ),
+  useAsyncData('programsPillars', () =>
+    new GetHomeDataUseCase(
+      new HttpProgramAreaRepository(apiBase),
+      new HttpNewsEventRepository(apiBase),
+      new MockTeamRepository(),
+    ).execute(),
+  ),
+])
+
+const { previewData: pageData } = usePayloadLivePreview(rawPage)
+
+useHead({
+  title: () => pageData.value?.seo?.metaTitle ?? 'Our Programs: Structural Glue — RuralNexus',
+  meta: [
+    { name: 'description', content: () => pageData.value?.seo?.metaDescription ?? '' },
+    { property: 'og:image', content: () => pageData.value?.seo?.ogImage?.url ?? '' },
+  ],
+})
 
 function getColorClass(theme: string) {
   const map: Record<string, string> = {
@@ -38,19 +65,19 @@ function getColorClass(theme: string) {
         <div class="absolute right-48 top-48 w-64 h-64 hex-mask bg-leaf"></div>
         <div class="absolute left-10 bottom-10 w-80 h-80 hex-mask border-2 border-white/20"></div>
       </div>
-      
+
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="max-w-3xl">
           <p class="text-xs font-bold uppercase tracking-[0.3em] text-leaf-300 mb-6 flex items-center gap-3">
-             Our Structural Methodology
+             {{ pageData?.header?.eyebrow ?? 'Our Structural Methodology' }}
           </p>
           <h1 class="text-5xl md:text-6xl lg:text-7xl font-display font-bold mb-8 leading-[1.1] tracking-tight">
-            Our <span class="text-leaf-300 italic">Programs.</span>
+            {{ pageData?.header?.headlinePrefix ?? 'Our' }} <span class="text-leaf-300 italic">{{ pageData?.header?.headlineEmphasis ?? 'Programs.' }}</span>
           </h1>
           <p class="text-lg md:text-xl font-body text-white/80 leading-relaxed balance py-4">
-            RuralNexus operates through strategic program areas that provide the structural glue needed for multi-stakeholder and transdisciplinary innovation.
+            {{ pageData?.header?.body ?? 'RuralNexus operates through strategic program areas that provide the structural glue needed for multi-stakeholder and transdisciplinary innovation.' }}
           </p>
-          
+
           <div class="flex flex-wrap gap-8 mt-12 pt-12 border-t border-white/10">
              <div class="flex items-center gap-3">
                <Layers class="w-5 h-5 text-leaf-300" />
@@ -69,14 +96,14 @@ function getColorClass(theme: string) {
     <section class="relative -mt-32 pb-24 z-20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div 
-            v-for="area in homeData?.programAreas" 
+          <div
+            v-for="area in homeData?.programAreas"
             :key="area.id"
             class="flex flex-col md:flex-row gap-8 bg-surface-container-lowest p-10 rounded-[50px] shadow-sm hover:shadow-2xl transition-all duration-700 hover:-translate-y-2 group"
           >
             <!-- Hexagonal Icon / Code -->
             <div class="flex-shrink-0">
-                <div 
+                <div
                   class="w-24 h-24 hex-mask text-white flex items-center justify-center font-display font-bold text-3xl shadow-2xl transition-transform duration-500 group-hover:scale-110"
                   :class="getColorClass(area.colorTheme)"
                 >
@@ -89,13 +116,13 @@ function getColorClass(theme: string) {
               <p class="text-on-surface-variant font-body leading-relaxed mb-10 opacity-80 text-sm">
                 {{ area.description }}
               </p>
-              
+
               <!-- SDG Mapping (Vibrant Badges) -->
               <div class="mb-10">
                 <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em] mb-4 opacity-50">Strategic Alignment (SDGs)</p>
                 <div class="flex flex-wrap gap-2">
-                  <span 
-                    v-for="sdg in area.sdgs" 
+                  <span
+                    v-for="sdg in area.sdgs"
                     :key="sdg.code"
                     class="px-4 py-1.5 text-[10px] font-bold text-white rounded-xl shadow-lg transform hover:-translate-y-0.5 transition-transform"
                     :style="{ backgroundColor: sdg.color }"
@@ -121,10 +148,20 @@ function getColorClass(theme: string) {
                  </ul>
               </div>
 
-              <NuxtLink to="/contact" class="inline-flex items-center gap-3 text-primary font-bold text-xs tracking-[0.2em] uppercase hover:text-primary-container transition-all group/link">
-                Inquire about collaboration
-                <ArrowRight class="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
-              </NuxtLink>
+              <div class="flex flex-wrap gap-4">
+                <NuxtLink
+                  v-if="area.slug"
+                  :to="`/programs/${area.slug}`"
+                  class="inline-flex items-center gap-3 px-6 py-3 bg-primary text-white rounded-2xl font-bold text-xs tracking-[0.15em] uppercase hover:shadow-xl hover:shadow-primary/20 transition-all"
+                >
+                  View Details
+                  <ArrowRight class="w-4 h-4" />
+                </NuxtLink>
+                <NuxtLink to="/contact" class="inline-flex items-center gap-3 text-primary font-bold text-xs tracking-[0.2em] uppercase hover:text-primary-container transition-all group/link">
+                  Inquire about collaboration
+                  <ArrowRight class="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
+                </NuxtLink>
+              </div>
             </div>
           </div>
         </div>
@@ -134,7 +171,7 @@ function getColorClass(theme: string) {
     <!-- Call to Ecosystem -->
     <section class="py-24 bg-surface-container-low relative overflow-hidden">
        <div class="absolute left-0 top-0 w-64 h-64 hex-mask bg-primary opacity-5 -ml-32 -mt-32 animate-pulse"></div>
-       
+
        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
          <h2 class="text-3xl md:text-4xl font-display font-bold text-on-surface mb-6 tracking-tight">
            Join the RuralNexus Ecosystem

@@ -1,153 +1,91 @@
 <script setup lang="ts">
-useHead({ title: "Media Gallery — RuralNexus" });
+import { ref, computed } from 'vue';
+import { usePayloadLivePreview } from '../composables/usePayloadLivePreview';
 
-const categories = [
-  "All",
-  "Field Work",
-  "Community",
-  "Research",
-  "Events",
-  "Partners",
-];
-const activeCategory = ref("All");
+type GalleryPageGlobal = {
+  header: {
+    eyebrow?: string
+    headline?: string
+    body?: string
+  }
+  seo?: { metaTitle?: string; metaDescription?: string; ogImage?: { url?: string } }
+}
 
-// Color-coded placeholder gallery items (no external images needed)
-const galleryItems = [
-  {
-    id: "g1",
-    title: "Smallholder farm trial, Western Kenya",
-    category: "Field Work",
-    location: "Kisumu, Kenya",
-    year: "2025",
-    gradient: "from-leaf-700 to-primary",
-    aspect: "aspect-[4/3]",
-    size: "col-span-2",
-  },
-  {
-    id: "g2",
-    title: "Soil sample collection, Andes plateau",
-    category: "Research",
-    location: "Cusco, Peru",
-    year: "2025",
-    gradient: "from-primary to-cyan",
-    aspect: "aspect-[4/3]",
-    size: "col-span-1",
-  },
-  {
-    id: "g3",
-    title: "Community water committee meeting",
-    category: "Community",
-    location: "Andavadoaka, Madagascar",
-    year: "2024",
-    gradient: "from-cyan to-leaf-500",
-    aspect: "aspect-square",
-    size: "col-span-1",
-  },
-  {
-    id: "g4",
-    title: "Rural Food Systems Summit 2025",
-    category: "Events",
-    location: "Geneva, Switzerland",
-    year: "2025",
-    gradient: "from-sunset to-primary-container",
-    aspect: "aspect-[4/3]",
-    size: "col-span-1",
-  },
-  {
-    id: "g5",
-    title: "Drone mapping session over Xingu basin",
-    category: "Field Work",
-    location: "Pará, Brazil",
-    year: "2024",
-    gradient: "from-leaf-600 to-leaf-400",
-    aspect: "aspect-[4/3]",
-    size: "col-span-2",
-  },
-  {
-    id: "g6",
-    title: "Partner signing ceremony with EU Agritech Fund",
-    category: "Partners",
-    location: "Brussels, Belgium",
-    year: "2025",
-    gradient: "from-primary-container to-leaf-700",
-    aspect: "aspect-square",
-    size: "col-span-1",
-  },
-  {
-    id: "g7",
-    title: "Irrigation system installation, Sindh",
-    category: "Field Work",
-    location: "Sindh, Pakistan",
-    year: "2024",
-    gradient: "from-cyan to-primary",
-    aspect: "aspect-[4/3]",
-    size: "col-span-1",
-  },
-  {
-    id: "g8",
-    title: "Volunteer orientation Q2 2025",
-    category: "Events",
-    location: "Online",
-    year: "2025",
-    gradient: "from-primary to-primary-container",
-    aspect: "aspect-[4/3]",
-    size: "col-span-1",
-  },
-  {
-    id: "g9",
-    title: "Women's agricultural co-op, Burkina Faso",
-    category: "Community",
-    location: "Ouagadougou, Burkina Faso",
-    year: "2025",
-    gradient: "from-sunset to-leaf-600",
-    aspect: "aspect-[4/3]",
-    size: "col-span-1",
-  },
-  {
-    id: "g10",
-    title: "Spectral analysis in the RuralNexus data lab",
-    category: "Research",
-    location: "Geneva, Switzerland",
-    year: "2026",
-    gradient: "from-leaf-700 to-cyan",
-    aspect: "aspect-square",
-    size: "col-span-1",
-  },
-  {
-    id: "g11",
-    title: "Tree planting day — Miombo woodland restoration",
-    category: "Field Work",
-    location: "Zambia",
-    year: "2025",
-    gradient: "from-leaf-500 to-primary",
-    aspect: "aspect-[4/3]",
-    size: "col-span-2",
-  },
-  {
-    id: "g12",
-    title: "Annual Partners Meeting, Nairobi 2025",
-    category: "Events",
-    location: "Nairobi, Kenya",
-    year: "2025",
-    gradient: "from-primary-container to-sunset",
-    aspect: "aspect-[4/3]",
-    size: "col-span-1",
-  },
-];
+const config = useRuntimeConfig()
+const apiBase = config.public.apiBase as string
+
+const activeCategory = ref('All')
+
+const ASPECT_MAP: Record<string, string> = {
+  '4/3': 'aspect-[4/3]',
+  'square': 'aspect-square',
+  '16/10': 'aspect-[16/10]',
+  '3/4': 'aspect-[3/4]',
+}
+
+const SIZE_MAP: Record<string, string> = {
+  '1x1': 'col-span-1',
+  '2x1': 'col-span-2',
+  '1x2': 'col-span-1',
+}
+
+type PayloadGalleryItem = {
+  id: string; title: string; category: string; location: string; year: number
+  gradient?: string | null; aspectRatio?: string; gridSize?: string
+  image?: { url?: string } | null; caption?: string | null
+}
+
+const [{ data: rawPage }, { data: galleryData }] = await Promise.all([
+  useAsyncData('gallery-page-global', () =>
+    $fetch<GalleryPageGlobal>(`${apiBase}/api/globals/gallery-page`),
+  ),
+  useAsyncData('gallery', () =>
+    $fetch<{ docs: PayloadGalleryItem[] }>(`${apiBase}/api/gallery?limit=100`),
+  ),
+])
+
+const { previewData: pageData } = usePayloadLivePreview(rawPage)
+
+useHead({
+  title: () => pageData.value?.seo?.metaTitle ?? 'Media Gallery — RuralNexus',
+  meta: [
+    { name: 'description', content: () => pageData.value?.seo?.metaDescription ?? '' },
+    { property: 'og:image', content: () => pageData.value?.seo?.ogImage?.url ?? '' },
+  ],
+})
+
+const galleryItems = computed(() =>
+  (galleryData.value?.docs ?? []).map(g => ({
+    id: g.id,
+    title: g.title,
+    category: g.category,
+    location: g.location,
+    year: String(g.year),
+    gradient: g.gradient ?? 'from-primary to-leaf-600',
+    aspect: ASPECT_MAP[g.aspectRatio ?? '4/3'] ?? 'aspect-[4/3]',
+    size: SIZE_MAP[g.gridSize ?? '1x1'] ?? 'col-span-1',
+    imageUrl: g.image?.url,
+  })),
+)
+
+const categories = computed(() => {
+  const cats = new Set(galleryItems.value.map(g => g.category))
+  return ['All', ...cats]
+})
 
 const filtered = computed(() =>
-  activeCategory.value === "All"
-    ? galleryItems
-    : galleryItems.filter((g) => g.category === activeCategory.value),
-);
+  activeCategory.value === 'All'
+    ? galleryItems.value
+    : galleryItems.value.filter(g => g.category === activeCategory.value),
+)
 
 const categoryColors: Record<string, string> = {
-  "Field Work": "bg-leaf/10 text-leaf",
-  Community: "bg-cyan/10 text-cyan",
-  Research: "bg-primary/10 text-primary",
-  Events: "bg-sunset/10 text-sunset",
-  Partners: "bg-amber-500/10 text-amber-600",
-};
+  'Field Work': 'bg-leaf/10 text-leaf',
+  Community: 'bg-cyan/10 text-cyan',
+  Research: 'bg-primary/10 text-primary',
+  Events: 'bg-sunset/10 text-sunset',
+  Partners: 'bg-amber-500/10 text-amber-600',
+}
 </script>
 
 <template>
@@ -163,17 +101,15 @@ const categoryColors: Record<string, string> = {
         class="relative z-10 mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8"
       >
         <p class="text-sm font-bold uppercase tracking-widest opacity-70">
-          Visual Archive
+          {{ pageData?.header?.eyebrow ?? 'Visual Archive' }}
         </p>
         <h1 class="mt-4 font-display text-4xl font-bold md:text-5xl">
-          Media & Gallery
+          {{ pageData?.header?.headline ?? 'Media & Gallery' }}
         </h1>
         <p
           class="mx-auto mt-5 max-w-2xl font-body text-lg leading-relaxed opacity-85"
         >
-          A visual record of the work — from field research to community
-          convenings. Explore the people, places and moments that shape
-          RuralNexus.
+          {{ pageData?.header?.body ?? 'A visual record of the work — from field research to community convenings. Explore the people, places and moments that shape RuralNexus.' }}
         </p>
       </div>
     </section>
@@ -212,8 +148,15 @@ const categoryColors: Record<string, string> = {
             class="group relative cursor-pointer overflow-hidden rounded-2xl"
             :class="[item.aspect, item.size]"
           >
-            <!-- Gradient placeholder (simulates an image) -->
+            <!-- Actual image or gradient fallback -->
+            <img
+              v-if="item.imageUrl"
+              :src="item.imageUrl"
+              :alt="item.title"
+              class="absolute inset-0 w-full h-full object-cover transition duration-500 group-hover:scale-105"
+            />
             <div
+              v-else
               class="absolute inset-0 bg-gradient-to-br transition duration-500 group-hover:scale-105"
               :class="item.gradient"
             />
@@ -286,7 +229,19 @@ const categoryColors: Record<string, string> = {
         </div>
       </div>
     </section>
-
-
   </div>
 </template>
+
+<style scoped>
+.hex-mask {
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+</style>

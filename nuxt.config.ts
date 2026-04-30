@@ -5,6 +5,12 @@ import { fileURLToPath } from 'url'
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  devServer: { port: 3001 },
+  runtimeConfig: {
+    public: {
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:3000',
+    },
+  },
   
   // Hexagonal Architecture paths
   srcDir: 'src/presentation/',
@@ -23,6 +29,8 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
   app: {
+    pageTransition: { name: 'page', mode: 'out-in' },
+    layoutTransition: { name: 'layout', mode: 'out-in' },
     head: {
       title: 'RuralNexus — Empowering Rural Resilience',
       meta: [

@@ -71,6 +71,30 @@ h1, h2, h3, h4, h5, h6 {
   border: none !important;
 }
 
+/* Page transitions */
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(12px);
+}
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* Layout transitions */
+.layout-enter-active,
+.layout-leave-active {
+  transition: opacity 0.2s ease;
+}
+.layout-enter-from,
+.layout-leave-to {
+  opacity: 0;
+}
+
 /* Utility — animated gradient for hero overlay */
 @keyframes floaty {
   0%, 100% { transform: translateY(0); }
