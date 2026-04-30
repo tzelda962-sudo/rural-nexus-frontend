@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { 
-  Menu, X, Search, ChevronRight, ChevronDown, 
-  Layers, Rocket, Info, BarChart3, MessageSquareQuote, BookOpen 
+import {
+  Menu, X, Search, ChevronRight, ChevronDown,
+  Layers, Rocket, Info, BarChart3, MessageSquareQuote, BookOpen, Network
 } from 'lucide-vue-next';
 
 const isMenuOpen = ref(false);
@@ -10,13 +10,14 @@ const isDropdownOpen = ref<string | null>(null);
 
 const navLinks = [
   { name: 'Home', path: '/' },
-  { 
-    name: 'Who We Are', 
+  {
+    name: 'Who We Are',
     path: '#',
     children: [
       { name: 'Overview', path: '/about', desc: 'Our mission & vision', icon: Info },
+      { name: 'Our Network', path: '/network', desc: 'Team, partners & collaborators', icon: Network },
       { name: 'Impact Metrics', path: '/impact', desc: 'Measurable outcomes', icon: BarChart3 },
-      { name: 'Field Stories', path: '/stories', desc: 'Voices from the ground', icon: MessageSquareQuote }
+      { name: 'Field Stories', path: '/stories', desc: 'Voices from the ground', icon: MessageSquareQuote },
     ]
   },
   { 
