@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import {
   Menu, X, Search, ChevronRight, ChevronDown,
-  Layers, Rocket, Info, BarChart3, MessageSquareQuote, BookOpen,
+  Layers, Rocket, Info, BarChart3, MessageSquareQuote, BookOpen, Share2
 } from 'lucide-vue-next';
 
 const router = useRouter()
@@ -18,7 +18,7 @@ const navLinks = [
     path: '#',
     children: [
       { name: 'Overview', path: '/about', desc: 'Our mission & vision', icon: Info },
-      { name: 'Our Network', path: '/network', desc: 'Team, partners & collaborators', icon: Network },
+      { name: 'Our Network', path: '/network', desc: 'Team, partners & collaborators', icon: Share2 },
       { name: 'Impact Metrics', path: '/impact', desc: 'Measurable outcomes', icon: BarChart3 },
       { name: 'Field Stories', path: '/stories', desc: 'Voices from the ground', icon: MessageSquareQuote },
     ],
