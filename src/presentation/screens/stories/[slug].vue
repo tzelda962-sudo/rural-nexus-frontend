@@ -44,7 +44,25 @@ const heroGradient = computed(() => story.value?.gradient ?? 'from-emerald-600 t
 </script>
 
 <template>
-  <div v-if="story" class="bg-surface min-h-screen">
+  <!-- Loading skeleton -->
+  <div v-if="pending" class="bg-surface min-h-screen">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
+      <div class="h-4 w-32 bg-surface-container rounded-full animate-pulse mb-10" />
+    </div>
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="w-full aspect-[16/7] rounded-[40px] bg-surface-container animate-pulse" />
+    </div>
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-4">
+      <div class="h-3 w-48 bg-surface-container rounded-full animate-pulse" />
+      <div class="h-10 w-3/4 bg-surface-container rounded-xl animate-pulse" />
+      <div class="h-10 w-1/2 bg-surface-container rounded-xl animate-pulse" />
+      <div class="h-4 w-full bg-surface-container rounded-full animate-pulse mt-6" />
+      <div class="h-4 w-5/6 bg-surface-container rounded-full animate-pulse" />
+      <div class="h-4 w-4/6 bg-surface-container rounded-full animate-pulse" />
+    </div>
+  </div>
+
+  <div v-else-if="story" class="bg-surface min-h-screen">
     <!-- Back nav -->
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
       <NuxtLink to="/stories" class="inline-flex items-center gap-2 text-sm font-bold text-primary uppercase tracking-widest hover:opacity-70 transition-opacity">

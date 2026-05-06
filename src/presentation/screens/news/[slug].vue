@@ -43,7 +43,17 @@ const contentHtml = computed(() => lexicalToHtml(article.value?.content))
 </script>
 
 <template>
-  <div v-if="article" class="bg-surface min-h-screen">
+  <div v-if="pending" class="bg-surface min-h-screen">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 space-y-4">
+      <div class="h-4 w-32 bg-surface-container rounded-full animate-pulse mb-8" />
+      <div class="h-8 w-2/3 bg-surface-container rounded-xl animate-pulse" />
+      <div class="h-8 w-1/2 bg-surface-container rounded-xl animate-pulse" />
+      <div class="h-4 w-full bg-surface-container rounded-full animate-pulse mt-6" />
+      <div class="h-4 w-5/6 bg-surface-container rounded-full animate-pulse" />
+    </div>
+  </div>
+
+  <div v-else-if="article" class="bg-surface min-h-screen">
     <!-- Back nav -->
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
       <NuxtLink to="/events" class="inline-flex items-center gap-2 text-sm font-bold text-primary uppercase tracking-widest hover:opacity-70 transition-opacity">

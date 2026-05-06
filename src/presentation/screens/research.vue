@@ -173,8 +173,8 @@ const filteredResources = computed(() => {
                 <span class="text-[10px] font-bold uppercase tracking-widest">ResearchGate</span>
               </template>
               <template v-else>
-                <component :is="categories.find(c => c.name === doc.category)?.icon || FileText" class="w-3.5 h-3.5" />
-                <span class="text-[10px] font-bold uppercase tracking-widest">{{ doc.category }}</span>
+                <FileText class="w-3.5 h-3.5" />
+                <span class="text-[10px] font-bold uppercase tracking-widest">{{ doc.category ?? 'Internal' }}</span>
               </template>
             </div>
             <span v-if="doc.date" class="text-[10px] font-bold text-on-surface-variant opacity-40 uppercase tracking-widest">{{ doc.date }}</span>
