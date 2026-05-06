@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch } from 'vue'
+import { computed } from 'vue'
 import { ArrowLeft, Check, MapPin } from 'lucide-vue-next'
 import { lexicalToHtml } from '../../utils/lexicalToHtml'
 
@@ -29,7 +29,7 @@ type PayloadProgram = {
   seo?: { title?: string; description?: string; ogImage?: { url?: string } | null } | null
 }
 
-const { data, pending } = useLazyAsyncData(`program-${slug}`, () =>
+const { data } = await useAsyncData(`program-${slug}`, () =>
   $fetch<{ docs: PayloadProgram[] }>(
     `${apiBase}/api/programs?where[slug][equals]=${slug}&depth=2&limit=1`,
   ),
@@ -37,9 +37,9 @@ const { data, pending } = useLazyAsyncData(`program-${slug}`, () =>
 
 const program = computed(() => data.value?.docs[0] ?? null)
 
-watch([pending, program], ([isPending, p]) => {
-  if (!isPending && !p) throw createError({ statusCode: 404, statusMessage: 'Program not found' })
-})
+if (!program.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Program not found' })
+}
 
 useHead({
   title: () => `${program.value?.seo?.title ?? program.value?.title} — RuralNexus Programs`,
@@ -59,17 +59,7 @@ const COLOR_CLASS: Record<string, string> = {
 </script>
 
 <template>
-  <div v-if="pending" class="bg-surface min-h-screen">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 space-y-4">
-      <div class="h-4 w-32 bg-surface-container rounded-full animate-pulse mb-8" />
-      <div class="w-full h-64 bg-surface-container rounded-[40px] animate-pulse mt-4" />
-      <div class="h-8 w-2/3 bg-surface-container rounded-xl animate-pulse mt-8" />
-      <div class="h-4 w-full bg-surface-container rounded-full animate-pulse" />
-      <div class="h-4 w-5/6 bg-surface-container rounded-full animate-pulse" />
-    </div>
-  </div>
-
-  <div v-else-if="program" class="bg-surface min-h-screen">
+  <div v-if="program" class="bg-surface min-h-screen">
     <!-- Back nav -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
       <NuxtLink to="/programs" class="inline-flex items-center gap-2 text-sm font-bold text-primary uppercase tracking-widest hover:opacity-70 transition-opacity">
