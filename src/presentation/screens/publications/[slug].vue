@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { ArrowLeft, FileText, Download, User, Calendar, Tag } from 'lucide-vue-next'
 import { lexicalToHtml } from '../../utils/lexicalToHtml'
 
@@ -16,7 +16,7 @@ type PayloadPublication = {
   seo?: { title?: string; description?: string; ogImage?: { url?: string } | null } | null
 }
 
-const { data } = await useAsyncData(`pub-${slug}`, () =>
+const { data, pending } = useLazyAsyncData(`pub-${slug}`, () =>
   $fetch<{ docs: PayloadPublication[] }>(
     `${apiBase}/api/publications?where[slug][equals]=${slug}&depth=2&limit=1`,
   ),
@@ -24,9 +24,9 @@ const { data } = await useAsyncData(`pub-${slug}`, () =>
 
 const pub = computed(() => data.value?.docs[0] ?? null)
 
-if (!pub.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Publication not found' })
-}
+watch([pending, pub], ([isPending, p]) => {
+  if (!isPending && !p) throw createError({ statusCode: 404, statusMessage: 'Publication not found' })
+})
 
 useHead({
   title: () => `${pub.value?.seo?.title ?? pub.value?.title} — RuralNexus Research`,

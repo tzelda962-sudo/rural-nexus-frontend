@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { ArrowLeft, MapPin, Clock, Calendar, User } from 'lucide-vue-next'
 import { lexicalToHtml } from '../../utils/lexicalToHtml'
 
@@ -15,7 +15,7 @@ type PayloadStory = {
   content?: unknown; seo?: { title?: string; description?: string; ogImage?: { url?: string } | null } | null
 }
 
-const { data } = await useAsyncData(`story-${slug}`, () =>
+const { data, pending } = useLazyAsyncData(`story-${slug}`, () =>
   $fetch<{ docs: PayloadStory[] }>(
     `${apiBase}/api/stories?where[slug][equals]=${slug}&depth=2&limit=1`,
   ),
@@ -23,9 +23,9 @@ const { data } = await useAsyncData(`story-${slug}`, () =>
 
 const story = computed(() => data.value?.docs[0] ?? null)
 
-if (!story.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Story not found' })
-}
+watch([pending, story], ([isPending, s]) => {
+  if (!isPending && !s) throw createError({ statusCode: 404, statusMessage: 'Story not found' })
+})
 
 useHead({
   title: () => `${story.value?.seo?.title ?? story.value?.title} — RuralNexus`,

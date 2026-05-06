@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { MapPin, Clock, Calendar, ArrowRight, Plus, Quote } from 'lucide-vue-next';
+import { MapPin, Clock, Calendar, ArrowRight, Quote } from 'lucide-vue-next';
 import { usePayloadLivePreview } from '../composables/usePayloadLivePreview';
 
 type StoriesPageGlobal = {
@@ -22,14 +22,12 @@ type PayloadStory = {
   isFeatured: boolean; gradient?: string | null; image?: { url?: string } | null
 }
 
-const [{ data: rawPage }, { data: storiesData }] = await Promise.all([
-  useAsyncData('stories-page-global', () =>
-    $fetch<StoriesPageGlobal>(`${apiBase}/api/globals/stories-page`),
-  ),
-  useAsyncData('stories', () =>
-    $fetch<{ docs: PayloadStory[] }>(`${apiBase}/api/stories?limit=50&depth=1&sort=-date`),
-  ),
-])
+const { data: rawPage } = useLazyAsyncData('stories-page-global', () =>
+  $fetch<StoriesPageGlobal>(`${apiBase}/api/globals/stories-page`),
+)
+const { data: storiesData } = useLazyAsyncData('stories', () =>
+  $fetch<{ docs: PayloadStory[] }>(`${apiBase}/api/stories?limit=50&depth=1&sort=-date`),
+)
 
 const { previewData: pageData } = usePayloadLivePreview(rawPage)
 
@@ -149,18 +147,19 @@ const stories = computed(() =>
               {{ pageData?.gridSection?.body ?? 'A curated selection of dispatches from our global node network, documenting sustainable breakthroughs and lessons learned.' }}
             </p>
           </div>
-          <button
-            type="button"
+          <NuxtLink
+            to="/stories"
             class="flex items-center gap-2 rounded-2xl border border-outline-variant/10 bg-white px-8 py-4 text-xs font-bold uppercase tracking-widest text-on-surface transition-all hover:bg-primary hover:text-white"
           >
-            All Programs
-          </button>
+            All Stories
+          </NuxtLink>
         </div>
 
         <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          <article
+          <NuxtLink
             v-for="story in stories"
             :key="story.slug"
+            :to="`/stories/${story.slug}`"
             class="group flex h-full flex-col overflow-hidden rounded-[40px] bg-white shadow-sm ring-1 ring-outline-variant/5 transition hover:-translate-y-2 hover:shadow-2xl"
           >
             <div
@@ -189,23 +188,23 @@ const stories = computed(() =>
 
               <div class="mt-auto flex items-center justify-between text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest border-t border-outline-variant/5 pt-8">
                 <span class="flex items-center gap-2"><Calendar class="w-3.5 h-3.5" /> {{ story.date }}</span>
-                <NuxtLink :to="`/stories/${story.slug}`" class="flex items-center gap-2 text-primary hover:opacity-70 transition-opacity">
+                <span class="flex items-center gap-2 text-primary">
                   <Clock class="w-3.5 h-3.5" /> {{ story.readTime }}
-                </NuxtLink>
+                </span>
               </div>
             </div>
-          </article>
+          </NuxtLink>
         </div>
 
-        <!-- Dynamic Load -->
+        <!-- Contact CTA -->
         <div class="mt-20 flex justify-center">
-          <button
-            type="button"
+          <NuxtLink
+            to="/contact"
             class="group inline-flex items-center gap-3 rounded-[24px] border-2 border-primary/20 px-10 py-5 text-xs font-bold uppercase tracking-widest text-primary transition-all hover:bg-primary hover:text-white"
           >
-            Explore All Dispatches
-            <Plus class="h-4 w-4 transition-transform group-hover:rotate-90" />
-          </button>
+            Share Your Story
+            <ArrowRight class="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </NuxtLink>
         </div>
       </div>
     </section>

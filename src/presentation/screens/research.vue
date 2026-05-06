@@ -15,7 +15,6 @@ import {
 } from 'lucide-vue-next';
 import type { Component } from 'vue';
 
-type ResearchCategory = { label: string; icon: string }
 type ResearchPageGlobal = {
   header: {
     eyebrow?: string
@@ -25,7 +24,6 @@ type ResearchPageGlobal = {
   }
   filtersSection?: {
     searchPlaceholder?: string
-    categories?: ResearchCategory[]
     emptyStateHeading?: string
     emptyStateBody?: string
     clearFiltersLabel?: string
@@ -40,18 +38,11 @@ type ResearchPageGlobal = {
   seo?: { metaTitle?: string; metaDescription?: string; ogImage?: { url?: string } }
 }
 
-const ICON_MAP: Record<string, Component> = {
-  Library,
-  BookOpen,
-  FileCheck,
-  FileText,
-}
-
 const config = useRuntimeConfig()
 const apiBase = config.public.apiBase as string
 
 const searchQuery = ref('');
-const activeCategory = ref('All');
+const activeSource = ref<'All' | 'internal' | 'external'>('All');
 
 type PayloadPub = {
   id: string; title: string; slug: string; author?: string | null
@@ -61,14 +52,12 @@ type PayloadPub = {
   externalUrl?: string | null
 }
 
-const [{ data: rawPage }, { data: allResources }] = await Promise.all([
-  useAsyncData('research-page-global', () =>
-    $fetch<ResearchPageGlobal>(`${apiBase}/api/globals/research-page`),
-  ),
-  useAsyncData('researchData', () =>
-    $fetch<{ docs: PayloadPub[] }>(`${apiBase}/api/publications?limit=100&sort=-publishedDate&depth=1`),
-  ),
-])
+const { data: rawPage } = useLazyAsyncData('research-page-global', () =>
+  $fetch<ResearchPageGlobal>(`${apiBase}/api/globals/research-page`),
+)
+const { data: allResources } = useLazyAsyncData('researchData', () =>
+  $fetch<{ docs: PayloadPub[] }>(`${apiBase}/api/publications?limit=200&sort=-publishedDate&depth=1`),
+)
 
 const { previewData: pageData } = usePayloadLivePreview(rawPage)
 
@@ -80,22 +69,11 @@ useHead({
   ],
 })
 
-const categories = computed(() => {
-  const fromGlobal = pageData.value?.filtersSection?.categories ?? []
-  if (fromGlobal.length > 0) {
-    return [
-      { name: 'All', icon: Library as Component },
-      ...fromGlobal.map(c => ({ name: c.label, icon: (ICON_MAP[c.icon] ?? FileText) as Component })),
-    ]
-  }
-  return [
-    { name: 'All', icon: Library as Component },
-    { name: 'Research Paper', icon: BookOpen as Component },
-    { name: 'Policy Brief', icon: FileCheck as Component },
-    { name: 'Annual Report', icon: FileText as Component },
-    { name: 'Workshop Notes', icon: FileText as Component },
-  ]
-})
+const sourceFilters = [
+  { label: 'All Publications', value: 'All' as const, icon: Library as Component },
+  { label: 'ResearchGate', value: 'external' as const, icon: BookOpen as Component },
+  { label: 'Internal Reports', value: 'internal' as const, icon: FileCheck as Component },
+]
 
 function pubDisplayDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
@@ -116,8 +94,10 @@ const filteredResources = computed(() => {
   return docs.filter(doc => {
     const q = searchQuery.value.toLowerCase()
     const matchesSearch = !q || doc.title.toLowerCase().includes(q) || (doc.summary ?? '').toLowerCase().includes(q)
-    const matchesCategory = activeCategory.value === 'All' || doc.category === activeCategory.value
-    return matchesSearch && matchesCategory
+    const matchesSource = activeSource.value === 'All'
+      || (activeSource.value === 'external' && doc.isExternal)
+      || (activeSource.value === 'internal' && !doc.isExternal)
+    return matchesSearch && matchesSource
   })
 });
 </script>
@@ -162,19 +142,19 @@ const filteredResources = computed(() => {
           >
         </div>
 
-        <!-- Category Filters -->
+        <!-- Source Filters -->
         <div class="flex flex-wrap gap-3">
           <button
-            v-for="cat in categories"
-            :key="cat.name"
-            @click="activeCategory = cat.name"
+            v-for="f in sourceFilters"
+            :key="f.value"
+            @click="activeSource = f.value"
             class="flex items-center gap-2.5 px-6 py-3 rounded-2xl text-xs font-bold uppercase tracking-widest transition-all"
-            :class="activeCategory === cat.name
+            :class="activeSource === f.value
               ? 'bg-primary text-white shadow-xl shadow-primary/20 scale-105'
               : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'"
           >
-            <component :is="cat.icon" class="w-4 h-4" />
-            {{ cat.name }}
+            <component :is="f.icon" class="w-4 h-4" />
+            {{ f.label }}
           </button>
         </div>
       </div>
@@ -248,7 +228,7 @@ const filteredResources = computed(() => {
         </div>
         <h3 class="text-xl font-display font-bold text-on-surface mb-2">{{ pageData?.filtersSection?.emptyStateHeading ?? 'No matching resources' }}</h3>
         <p class="text-on-surface-variant opacity-60 font-body mb-10 max-w-sm mx-auto">{{ pageData?.filtersSection?.emptyStateBody ?? "We couldn't find any papers or methodologies matching your current filter." }}</p>
-        <button @click="searchQuery = ''; activeCategory = 'All'" class="px-8 py-4 bg-primary text-white rounded-2xl font-bold text-sm tracking-widest uppercase shadow-xl shadow-primary/20 hover:scale-105 transition-all">
+        <button @click="searchQuery = ''; activeSource = 'All'" class="px-8 py-4 bg-primary text-white rounded-2xl font-bold text-sm tracking-widest uppercase shadow-xl shadow-primary/20 hover:scale-105 transition-all">
           {{ pageData?.filtersSection?.clearFiltersLabel ?? 'Clear All Filters' }}
         </button>
       </div>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { ArrowLeft, Check, MapPin } from 'lucide-vue-next'
 import { lexicalToHtml } from '../../utils/lexicalToHtml'
 
@@ -29,7 +29,7 @@ type PayloadProgram = {
   seo?: { title?: string; description?: string; ogImage?: { url?: string } | null } | null
 }
 
-const { data } = await useAsyncData(`program-${slug}`, () =>
+const { data, pending } = useLazyAsyncData(`program-${slug}`, () =>
   $fetch<{ docs: PayloadProgram[] }>(
     `${apiBase}/api/programs?where[slug][equals]=${slug}&depth=2&limit=1`,
   ),
@@ -37,9 +37,9 @@ const { data } = await useAsyncData(`program-${slug}`, () =>
 
 const program = computed(() => data.value?.docs[0] ?? null)
 
-if (!program.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Program not found' })
-}
+watch([pending, program], ([isPending, p]) => {
+  if (!isPending && !p) throw createError({ statusCode: 404, statusMessage: 'Program not found' })
+})
 
 useHead({
   title: () => `${program.value?.seo?.title ?? program.value?.title} — RuralNexus Programs`,

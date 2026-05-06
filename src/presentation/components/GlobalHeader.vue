@@ -66,7 +66,7 @@ function submitSearch() {
         <!-- Logo -->
         <div class="flex-shrink-0 flex items-center relative z-50">
           <NuxtLink to="/" @click="closeMenu" class="flex items-center group">
-            <img src="/dark-logo.png" alt="RuralNexus" class="h-12 w-auto transition-opacity group-hover:opacity-80" />
+            <img src="/light-logo.png" alt="RuralNexus" class="h-12 w-auto transition-opacity group-hover:opacity-80" />
           </NuxtLink>
         </div>
 
@@ -197,7 +197,7 @@ function submitSearch() {
         <div v-if="isMenuOpen" class="fixed inset-y-0 right-0 w-full max-w-sm bg-white z-[100] border-l border-outline-variant/10 flex flex-col h-[100dvh]">
           <div class="h-20 flex items-center justify-between px-6 shrink-0 border-b border-outline-variant/5">
              <NuxtLink to="/" @click="closeMenu" class="flex items-center group">
-                <img src="/dark-logo.png" alt="RuralNexus" class="h-10 w-auto" />
+                <img src="/light-logo.png" alt="RuralNexus" class="h-10 w-auto" />
              </NuxtLink>
              <button @click="toggleMenu" class="p-2 text-on-surface hover:bg-surface-container-low rounded-xl">
                <X class="w-6 h-6" />

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { ArrowLeft, Calendar, User, Tag } from 'lucide-vue-next'
 import { lexicalToHtml } from '../../utils/lexicalToHtml'
 
@@ -15,7 +15,7 @@ type PayloadNewsEvent = {
   seo?: { title?: string; description?: string; ogImage?: { url?: string } | null } | null
 }
 
-const { data, error } = await useAsyncData(`news-${slug}`, () =>
+const { data, pending } = useLazyAsyncData(`news-${slug}`, () =>
   $fetch<{ docs: PayloadNewsEvent[] }>(
     `${apiBase}/api/news-events?where[slug][equals]=${slug}&depth=2&limit=1`,
   ),
@@ -23,9 +23,9 @@ const { data, error } = await useAsyncData(`news-${slug}`, () =>
 
 const article = computed(() => data.value?.docs[0] ?? null)
 
-if (!article.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Article not found' })
-}
+watch([pending, article], ([isPending, a]) => {
+  if (!isPending && !a) throw createError({ statusCode: 404, statusMessage: 'Article not found' })
+})
 
 useHead({
   title: () => `${article.value?.seo?.title ?? article.value?.title} — RuralNexus`,

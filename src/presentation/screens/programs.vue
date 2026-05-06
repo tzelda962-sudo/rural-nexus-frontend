@@ -20,18 +20,16 @@ type ProgramsPageGlobal = {
 const config = useRuntimeConfig()
 const apiBase = config.public.apiBase as string
 
-const [{ data: rawPage }, { data: homeData }] = await Promise.all([
-  useAsyncData('programs-page-global', () =>
-    $fetch<ProgramsPageGlobal>(`${apiBase}/api/globals/programs-page`),
-  ),
-  useAsyncData('programsPillars', () =>
-    new GetHomeDataUseCase(
-      new HttpProgramAreaRepository(apiBase),
-      new HttpNewsEventRepository(apiBase),
-      new MockTeamRepository(),
-    ).execute(),
-  ),
-])
+const { data: rawPage } = useLazyAsyncData('programs-page-global', () =>
+  $fetch<ProgramsPageGlobal>(`${apiBase}/api/globals/programs-page`),
+)
+const { data: homeData } = useLazyAsyncData('programsPillars', () =>
+  new GetHomeDataUseCase(
+    new HttpProgramAreaRepository(apiBase),
+    new HttpNewsEventRepository(apiBase),
+    new MockTeamRepository(),
+  ).execute(),
+)
 
 const { previewData: pageData } = usePayloadLivePreview(rawPage)
 
@@ -180,12 +178,12 @@ function getColorClass(theme: string) {
            Our programs scale through collaborative intelligence. We are seeking academic partners, field organizations, and technology hub collaborators.
          </p>
          <div class="flex flex-wrap justify-center gap-6">
-           <button class="px-10 py-5 bg-primary text-white rounded-[22px] font-bold hover:shadow-2xl hover:shadow-primary/30 transition-all">
+           <NuxtLink to="/contact" class="px-10 py-5 bg-primary text-white rounded-[22px] font-bold hover:shadow-2xl hover:shadow-primary/30 transition-all">
              Research Partnership
-           </button>
-           <button class="px-10 py-5 bg-surface-container-highest text-on-surface rounded-[22px] font-bold hover:bg-surface-container-high transition-all">
+           </NuxtLink>
+           <NuxtLink to="/contact" class="px-10 py-5 bg-surface-container-highest text-on-surface rounded-[22px] font-bold hover:bg-surface-container-high transition-all">
              Regional Collaboration
-           </button>
+           </NuxtLink>
          </div>
        </div>
     </section>

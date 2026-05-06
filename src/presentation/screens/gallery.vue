@@ -35,14 +35,12 @@ type PayloadGalleryItem = {
   image?: { url?: string } | null; caption?: string | null
 }
 
-const [{ data: rawPage }, { data: galleryData }] = await Promise.all([
-  useAsyncData('gallery-page-global', () =>
-    $fetch<GalleryPageGlobal>(`${apiBase}/api/globals/gallery-page`),
-  ),
-  useAsyncData('gallery', () =>
-    $fetch<{ docs: PayloadGalleryItem[] }>(`${apiBase}/api/gallery?limit=100`),
-  ),
-])
+const { data: rawPage } = useLazyAsyncData('gallery-page-global', () =>
+  $fetch<GalleryPageGlobal>(`${apiBase}/api/globals/gallery-page`),
+)
+const { data: galleryData } = useLazyAsyncData('gallery', () =>
+  $fetch<{ docs: PayloadGalleryItem[] }>(`${apiBase}/api/gallery?limit=100`),
+)
 
 const { previewData: pageData } = usePayloadLivePreview(rawPage)
 

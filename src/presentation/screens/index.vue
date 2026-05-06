@@ -285,21 +285,19 @@ type Testimonial = {
 }
 
 // Three fetches run in parallel on SSR
-const [{ data: pageData }, { data: homeData }, { data: testimonialsData }] = await Promise.all([
-  useAsyncData('home-page-global', () =>
-    $fetch<HomePageGlobal>(`${apiBase}/api/globals/home-page`),
-  ),
-  useAsyncData('homeData', () =>
-    new GetHomeDataUseCase(
-      new HttpProgramAreaRepository(apiBase),
-      new HttpNewsEventRepository(apiBase),
-      new MockTeamRepository(),
-    ).execute(),
-  ),
-  useAsyncData('testimonials', () =>
-    $fetch<{ docs: Testimonial[] }>(`${apiBase}/api/homepage-testimonials?limit=3&depth=1&sort=order`),
-  ),
-])
+const { data: pageData } = useLazyAsyncData('home-page-global', () =>
+  $fetch<HomePageGlobal>(`${apiBase}/api/globals/home-page`),
+)
+const { data: homeData } = useLazyAsyncData('homeData', () =>
+  new GetHomeDataUseCase(
+    new HttpProgramAreaRepository(apiBase),
+    new HttpNewsEventRepository(apiBase),
+    new MockTeamRepository(),
+  ).execute(),
+)
+const { data: testimonialsData } = useLazyAsyncData('testimonials', () =>
+  $fetch<{ docs: Testimonial[] }>(`${apiBase}/api/homepage-testimonials?limit=3&depth=1&sort=order`),
+)
 
 const { previewData: page } = usePayloadLivePreview(pageData)
 

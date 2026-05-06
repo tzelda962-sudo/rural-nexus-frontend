@@ -14,12 +14,12 @@ useHead({ title: 'Our Network — RuralNexus' })
 const config = useRuntimeConfig()
 const repo = new HttpPartnersRepository(config.public.apiBase as string)
 
-const { data: ceo } = await useAsyncData('network-ceo', () => repo.getTeamByType('ceo'))
-const { data: paManagers } = await useAsyncData('network-pac', () => repo.getTeamByType('pa-manager'))
-const { data: advisoryBoard } = await useAsyncData('network-advisory', () => repo.getTeamByType('advisory'))
-const { data: europePartners } = await useAsyncData('partners-europe', () => repo.getByContinent('Europe'))
-const { data: africaPartners } = await useAsyncData('partners-africa', () => repo.getByContinent('Africa'))
-const { data: interventionCountries } = await useAsyncData('intervention-countries', () => repo.getInterventionCountries())
+const { data: ceo } = useLazyAsyncData('network-ceo', () => repo.getTeamByType('ceo'))
+const { data: paManagers } = useLazyAsyncData('network-pac', () => repo.getTeamByType('pa-manager'))
+const { data: advisoryBoard } = useLazyAsyncData('network-advisory', () => repo.getTeamByType('advisory'))
+const { data: europePartners } = useLazyAsyncData('partners-europe', () => repo.getByContinent('Europe'))
+const { data: africaPartners } = useLazyAsyncData('partners-africa', () => repo.getByContinent('Africa'))
+const { data: interventionCountries } = useLazyAsyncData('intervention-countries', () => repo.getInterventionCountries())
 
 function typeIcon(type: Partner['type']) {
   const map: Record<string, typeof Globe> = {

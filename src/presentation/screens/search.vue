@@ -16,7 +16,7 @@ type SearchHit = {
 }
 type SearchResult = { query: string; hits: SearchHit[]; total: number }
 
-const { data, refresh, pending } = await useAsyncData(
+const { data, refresh, pending } = useLazyAsyncData(
   'search',
   () => query.value.trim().length >= 2
     ? $fetch<SearchResult>(`${apiBase}/api/search?q=${encodeURIComponent(query.value.trim())}&limit=20`)
