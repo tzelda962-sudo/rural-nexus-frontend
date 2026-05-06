@@ -5,7 +5,7 @@ import { HttpProgramAreaRepository } from '@infrastructure/repositories/HttpProg
 import { HttpNewsEventRepository } from '@infrastructure/repositories/HttpNewsEventRepository';
 import { MockTeamRepository } from '@infrastructure/repositories/MockTeamRepository';
 import { Check, ArrowRight, Globe, Layers } from 'lucide-vue-next';
-import { usePayloadLivePreview } from '../composables/usePayloadLivePreview';
+import { usePayloadLivePreview } from '../../composables/usePayloadLivePreview';
 
 type ProgramsPageGlobal = {
   header: {

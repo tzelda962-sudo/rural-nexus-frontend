@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { MapPin, Clock, Calendar, ArrowRight, Quote } from 'lucide-vue-next';
-import { usePayloadLivePreview } from '../composables/usePayloadLivePreview';
+import { usePayloadLivePreview } from '../../composables/usePayloadLivePreview';
 
 type StoriesPageGlobal = {
   header: {
