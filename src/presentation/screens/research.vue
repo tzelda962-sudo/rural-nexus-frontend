@@ -8,6 +8,7 @@ import {
   FileText,
   Download,
   ChevronRight,
+  ExternalLink,
   BookOpen,
   Library,
   FileCheck
@@ -54,8 +55,10 @@ const activeCategory = ref('All');
 
 type PayloadPub = {
   id: string; title: string; slug: string; author?: string | null
-  category: string; publishedDate: string; summary: string
+  category?: string | null; publishedDate?: string | null; summary?: string | null
   pdf?: { url?: string } | null
+  publicationType?: 'internal' | 'external'
+  externalUrl?: string | null
 }
 
 const [{ data: rawPage }, { data: allResources }] = await Promise.all([
@@ -103,14 +106,16 @@ const filteredResources = computed(() => {
     id: d.id,
     slug: d.slug,
     title: d.title,
-    summary: d.summary,
-    category: d.category,
-    date: pubDisplayDate(d.publishedDate),
+    summary: d.summary ?? null,
+    category: d.category ?? null,
+    date: d.publishedDate ? pubDisplayDate(d.publishedDate) : null,
     pdfUrl: (d.pdf as { url?: string } | null)?.url,
+    isExternal: d.publicationType === 'external',
+    externalUrl: d.externalUrl ?? null,
   }))
   return docs.filter(doc => {
     const q = searchQuery.value.toLowerCase()
-    const matchesSearch = !q || doc.title.toLowerCase().includes(q) || doc.summary.toLowerCase().includes(q)
+    const matchesSearch = !q || doc.title.toLowerCase().includes(q) || (doc.summary ?? '').toLowerCase().includes(q)
     const matchesCategory = activeCategory.value === 'All' || doc.category === activeCategory.value
     return matchesSearch && matchesCategory
   })
@@ -183,27 +188,47 @@ const filteredResources = computed(() => {
         >
           <div class="flex justify-between items-start mb-10">
             <div class="flex items-center gap-2 px-3 py-1 bg-primary/5 text-primary rounded-full">
-               <component :is="categories.find(c => c.name === doc.category)?.icon || FileText" class="w-3.5 h-3.5" />
-               <span class="text-[10px] font-bold uppercase tracking-widest">{{ doc.category }}</span>
+              <template v-if="doc.isExternal">
+                <ExternalLink class="w-3.5 h-3.5" />
+                <span class="text-[10px] font-bold uppercase tracking-widest">ResearchGate</span>
+              </template>
+              <template v-else>
+                <component :is="categories.find(c => c.name === doc.category)?.icon || FileText" class="w-3.5 h-3.5" />
+                <span class="text-[10px] font-bold uppercase tracking-widest">{{ doc.category }}</span>
+              </template>
             </div>
-            <span class="text-[10px] font-bold text-on-surface-variant opacity-40 uppercase tracking-widest">{{ doc.date }}</span>
+            <span v-if="doc.date" class="text-[10px] font-bold text-on-surface-variant opacity-40 uppercase tracking-widest">{{ doc.date }}</span>
           </div>
 
           <h3 class="font-display font-bold text-xl mb-4 text-on-surface leading-snug group-hover:text-primary transition-colors">
-            <NuxtLink :to="`/publications/${doc.slug}`">{{ doc.title }}</NuxtLink>
+            <a v-if="doc.isExternal" :href="doc.externalUrl!" target="_blank" rel="noopener noreferrer">{{ doc.title }}</a>
+            <NuxtLink v-else :to="`/publications/${doc.slug}`">{{ doc.title }}</NuxtLink>
           </h3>
 
-          <p class="font-body text-sm text-on-surface-variant mb-10 flex-grow line-clamp-4 opacity-70 leading-relaxed">
+          <p v-if="doc.summary" class="font-body text-sm text-on-surface-variant mb-10 flex-grow line-clamp-4 opacity-70 leading-relaxed">
             {{ doc.summary }}
+          </p>
+          <p v-else class="font-body text-sm text-on-surface-variant/40 mb-10 flex-grow italic">
+            View full paper on ResearchGate
           </p>
 
           <div class="pt-8 border-t border-outline-variant/10 mt-auto flex justify-between items-center">
-            <NuxtLink :to="`/publications/${doc.slug}`" class="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest group/link">
+            <a
+              v-if="doc.isExternal"
+              :href="doc.externalUrl!"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest group/link"
+            >
+              View on ResearchGate
+              <ExternalLink class="w-4 h-4 transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+            </a>
+            <NuxtLink v-else :to="`/publications/${doc.slug}`" class="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest group/link">
               Read Abstract
               <ChevronRight class="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
             </NuxtLink>
             <a
-              v-if="doc.pdfUrl"
+              v-if="!doc.isExternal && doc.pdfUrl"
               :href="doc.pdfUrl"
               target="_blank"
               rel="noopener noreferrer"
@@ -212,9 +237,6 @@ const filteredResources = computed(() => {
             >
               <Download class="w-5 h-5" />
             </a>
-            <button v-else class="p-3 bg-surface-container-low text-on-surface-variant/60 hover:bg-primary/10 hover:text-primary rounded-xl transition-all" title="Download PDF Access">
-              <Download class="w-5 h-5" />
-            </button>
           </div>
         </article>
       </div>

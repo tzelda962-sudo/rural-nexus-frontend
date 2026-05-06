@@ -71,18 +71,14 @@ h1, h2, h3, h4, h5, h6 {
   border: none !important;
 }
 
-/* Page transitions */
-.page-enter-active,
-.page-leave-active {
-  transition: opacity 0.25s ease, transform 0.25s ease;
+/* Page transitions — fast cross-fade, no out-in delay */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease;
 }
-.page-enter-from {
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
-  transform: translateY(12px);
-}
-.page-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
 }
 
 /* Layout transitions */

@@ -65,11 +65,8 @@ function submitSearch() {
       <div class="flex justify-between h-20 items-center">
         <!-- Logo -->
         <div class="flex-shrink-0 flex items-center relative z-50">
-          <NuxtLink to="/" @click="closeMenu" class="flex items-center gap-2 group">
-            <div class="w-10 h-10 hex-mask bg-gradient-to-br from-cyan-500 to-leaf-500 flex items-center justify-center text-white font-bold text-xl transition-transform group-hover:scale-105">
-              R
-            </div>
-            <span class="font-display font-bold text-xl text-primary-container tracking-tight">RuralNexus</span>
+          <NuxtLink to="/" @click="closeMenu" class="flex items-center group">
+            <img src="/dark-logo.png" alt="RuralNexus" class="h-12 w-auto transition-opacity group-hover:opacity-80" />
           </NuxtLink>
         </div>
 
@@ -199,9 +196,8 @@ function submitSearch() {
       >
         <div v-if="isMenuOpen" class="fixed inset-y-0 right-0 w-full max-w-sm bg-white z-[100] border-l border-outline-variant/10 flex flex-col h-[100dvh]">
           <div class="h-20 flex items-center justify-between px-6 shrink-0 border-b border-outline-variant/5">
-             <NuxtLink to="/" @click="closeMenu" class="flex items-center gap-2 group">
-                <div class="w-8 h-8 hex-mask bg-gradient-to-br from-cyan-500 to-leaf-500 flex items-center justify-center text-white font-bold text-lg">R</div>
-                <span class="font-display font-bold text-lg text-primary-container tracking-tight">RuralNexus</span>
+             <NuxtLink to="/" @click="closeMenu" class="flex items-center group">
+                <img src="/dark-logo.png" alt="RuralNexus" class="h-10 w-auto" />
              </NuxtLink>
              <button @click="toggleMenu" class="p-2 text-on-surface hover:bg-surface-container-low rounded-xl">
                <X class="w-6 h-6" />

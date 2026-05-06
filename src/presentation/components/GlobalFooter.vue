@@ -57,11 +57,8 @@ const SOCIAL_ICONS: Record<string, string> = {
       <div class="grid grid-cols-1 md:grid-cols-3 gap-12 mb-12">
         <!-- Branding Col -->
         <div>
-           <div class="flex items-center gap-2 mb-4">
-            <div class="w-8 h-8 hex-mask bg-gradient-to-br from-cyan-400 to-leaf-400 flex items-center justify-center text-white font-bold text-sm">
-              {{ (settings?.brand?.name ?? 'RuralNexus').charAt(0) }}
-            </div>
-            <span class="font-display font-bold text-lg text-white tracking-tight">{{ settings?.brand?.name ?? 'RuralNexus' }}</span>
+           <div class="flex items-center mb-4">
+            <img src="/light-logo.png" alt="RuralNexus" class="h-10 w-auto" />
           </div>
           <p class="text-sm text-white/90 leading-relaxed font-body">
             {{ settings?.brand?.tagline ?? 'Empowering Rural Resilience. Action Research, Innovation, and Development for resilient food systems.' }}

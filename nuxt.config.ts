@@ -29,8 +29,7 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
   app: {
-    pageTransition: { name: 'page', mode: 'out-in' },
-    layoutTransition: { name: 'layout', mode: 'out-in' },
+    pageTransition: { name: 'fade', mode: 'default' },
     head: {
       title: 'RuralNexus — Empowering Rural Resilience',
       meta: [
@@ -42,7 +41,7 @@ export default defineNuxtConfig({
         },
       ],
       link: [
-        // We will pull Inter and Manrope fonts from Google Fonts as defined in DESIGN.md
+        { rel: 'icon', type: 'image/png', href: '/favicon.png' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' },
         { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700&display=swap' }
