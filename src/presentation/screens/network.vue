@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useRuntimeConfig, useAsyncData } from '#imports'
+import { useRuntimeConfig, useLazyAsyncData } from '#imports'
 import {
   HttpPartnersRepository,
   type Partner,
   type TeamMemberApi,
   type InterventionCountry,
 } from '@infrastructure/repositories/HttpPartnersRepository'
-import AfricaInterventionMap from '../components/AfricaInterventionMap.vue'
+import WorldInterventionMap from '../components/WorldInterventionMap.vue'
 import { Globe, GraduationCap, FlaskConical, Handshake, MapPin } from 'lucide-vue-next'
 
 useHead({ title: 'Our Network — RuralNexus' })
@@ -195,11 +195,11 @@ function typeIcon(type: Partner['type']) {
         <h2 class="text-3xl font-display font-bold mb-4">Countries of Intervention</h2>
         <p class="text-on-surface-variant font-body mb-10 max-w-2xl leading-relaxed">
           RuralNexus has active field operations and research programmes across
-          {{ interventionCountries?.length ?? 10 }} African countries. Hover over a country to see active programmes.
+          {{ interventionCountries?.length ?? 10 }} countries. Hover over a highlighted country to see active programmes, or click a region to zoom in.
         </p>
 
         <div class="max-w-2xl mx-auto">
-          <AfricaInterventionMap :countries="interventionCountries ?? []" />
+          <WorldInterventionMap :countries="interventionCountries ?? []" />
         </div>
 
         <!-- Country chips -->
