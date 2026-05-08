@@ -5,6 +5,7 @@ export type Partner = {
   type: 'University' | 'Research Institute' | 'NGO' | 'Funding Agency'
   continent: 'Europe' | 'Africa' | 'Global'
   country: string
+  show?: boolean
   website?: string
   description?: string
   logo?: { url?: string } | null
@@ -33,14 +34,14 @@ export class HttpPartnersRepository {
 
   async getAll(): Promise<Partner[]> {
     const res = await $fetch<PayloadList<Partner>>(
-      `${this.baseUrl}/api/partners?limit=100&sort=continent,name&depth=1`,
+      `${this.baseUrl}/api/partners?where[show][equals]=true&limit=100&sort=continent,name&depth=1`,
     )
     return res.docs
   }
 
   async getByContinent(continent: 'Europe' | 'Africa' | 'Global'): Promise<Partner[]> {
     const res = await $fetch<PayloadList<Partner>>(
-      `${this.baseUrl}/api/partners?where[continent][equals]=${continent}&limit=100&sort=name&depth=1`,
+      `${this.baseUrl}/api/partners?where[continent][equals]=${continent}&where[show][equals]=true&limit=100&sort=name&depth=1`,
     )
     return res.docs
   }
