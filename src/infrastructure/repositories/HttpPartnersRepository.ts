@@ -34,16 +34,16 @@ export class HttpPartnersRepository {
 
   async getAll(): Promise<Partner[]> {
     const res = await $fetch<PayloadList<Partner>>(
-      `${this.baseUrl}/api/partners?where[show][equals]=true&limit=100&sort=continent,name&depth=1`,
+      `${this.baseUrl}/api/partners?limit=100&sort=continent,name&depth=1`,
     )
-    return res.docs
+    return res.docs.filter((partner) => partner.show !== false)
   }
 
   async getByContinent(continent: 'Europe' | 'Africa' | 'Global'): Promise<Partner[]> {
     const res = await $fetch<PayloadList<Partner>>(
-      `${this.baseUrl}/api/partners?where[continent][equals]=${continent}&where[show][equals]=true&limit=100&sort=name&depth=1`,
+      `${this.baseUrl}/api/partners?where[continent][equals]=${continent}&limit=100&sort=name&depth=1`,
     )
-    return res.docs
+    return res.docs.filter((partner) => partner.show !== false)
   }
 
   async getTeamByType(
@@ -52,7 +52,7 @@ export class HttpPartnersRepository {
     const res = await $fetch<PayloadList<TeamMemberApi>>(
       `${this.baseUrl}/api/team?where[memberType][equals]=${memberType}&limit=100&depth=1`,
     )
-    return res.docs
+    return res.docs.filter((member) => member.show !== false)
   }
 
   async getInterventionCountries(): Promise<InterventionCountry[]> {
