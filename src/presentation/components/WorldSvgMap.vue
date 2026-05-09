@@ -1,18 +1,17 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import L from 'leaflet'
 import type { InterventionCountry } from '@infrastructure/repositories/HttpPartnersRepository'
 
 const props = defineProps<{ countries: InterventionCountry[] }>()
 
 const mapContainer = ref<HTMLDivElement>()
-const map = ref<L.Map>()
-const svgOverlay = ref<L.SVGOverlay>()
+const map = ref<any>()
 const highlightedCountries = ref<Set<string>>(new Set())
 const hoveredCountry = ref<string | null>(null)
 const hoveredContinent = ref<string | null>(null)
 const isLoading = ref(true)
 const error = ref<string | null>(null)
+const isMounted = ref(false)
 const tooltip = ref<{ visible: boolean; x: number; y: number; title: string; content: string }>({
   visible: false,
   x: 0,
@@ -88,6 +87,8 @@ function updateHighlightedCountries() {
 }
 
 function applyStyles() {
+  if (typeof window === 'undefined') return
+  
   const svg = document.querySelector('svg')
   if (!svg) return
 
@@ -143,6 +144,8 @@ function hideTooltip() {
 }
 
 function attachEventListeners() {
+  if (typeof window === 'undefined') return
+  
   const svg = document.querySelector('svg')
   if (!svg) return
 
@@ -186,6 +189,9 @@ async function initMap() {
   if (typeof window === 'undefined' || !mapContainer.value) return
 
   try {
+    // Dynamically import Leaflet only on client
+    const L = (await import('leaflet')).default
+    
     // Initialize map
     map.value = L.map(mapContainer.value, {
       crs: L.CRS.Simple,
@@ -206,9 +212,10 @@ async function initMap() {
 
     // Create SVG overlay
     const bounds = L.latLngBounds([[-90, -180], [90, 180]])
-    const svgElement = new DOMParser().parseFromString(svgText, 'image/svg+xml').documentElement as SVGElement
+    const parser = new DOMParser()
+    const svgElement = parser.parseFromString(svgText, 'image/svg+xml').documentElement as SVGElement
     
-    svgOverlay.value = L.svgOverlay(svgElement, bounds).addTo(map.value)
+    L.svgOverlay(svgElement, bounds).addTo(map.value)
 
     // Build continent map and attach listeners
     buildContinentMap()
@@ -217,7 +224,6 @@ async function initMap() {
     setTimeout(() => {
       updateHighlightedCountries()
       attachEventListeners()
-      createContinentAreas()
     }, 100)
 
     error.value = null
@@ -231,53 +237,17 @@ async function initMap() {
   }
 }
 
-function createContinentAreas() {
-  const svg = document.querySelector('svg')
-  if (!svg) return
-
-  // Create continent hover areas
-  Object.entries(continents).forEach(([continentName, data]) => {
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g')
-    g.setAttribute('data-continent', continentName)
-
-    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
-    rect.setAttribute('x', '0')
-    rect.setAttribute('y', '0')
-    rect.setAttribute('width', '100%')
-    rect.setAttribute('height', '100%')
-    rect.setAttribute('fill', 'transparent')
-    rect.style.pointerEvents = 'none'
-
-    g.appendChild(rect)
-    g.style.cursor = 'pointer'
-
-    // Only track hover, don't block country events
-    g.addEventListener('mouseenter', () => {
-      hoveredContinent.value = continentName
-      applyStyles()
-    })
-
-    g.addEventListener('mouseleave', () => {
-      hoveredContinent.value = null
-      applyStyles()
-    })
-
-    g.addEventListener('click', () => {
-      zoomToContinent(continentName)
-    })
-
-    svg.appendChild(g)
-  })
-}
-
 onMounted(() => {
+  isMounted.value = true
   initMap()
 })
 
 watch(
   () => props.countries,
   () => {
-    updateHighlightedCountries()
+    if (isMounted.value) {
+      updateHighlightedCountries()
+    }
   },
   { deep: true },
 )
@@ -294,7 +264,7 @@ watch(
         ref="mapContainer"
         class="h-[420px] w-full"
       />
-      <div v-if="isLoading" class="absolute inset-0 h-[420px] flex items-center justify-center text-center text-sm text-on-surface-variant bg-surface-container/80">
+      <div v-if="isLoading" class="absolute inset-0 h-[420px] flex items-center justify-center text-center text-sm text-on-surface-variant bg-surface-container/80 z-10">
         Loading map...
       </div>
     </div>
