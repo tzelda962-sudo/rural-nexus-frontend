@@ -116,7 +116,7 @@ function getColorClass(theme: string) {
               </p>
 
               <!-- SDG Mapping (Vibrant Badges) -->
-              <div class="mb-10">
+              <div class="mb-10" v-if="area.sdgs && area.sdgs.length">
                 <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em] mb-4 opacity-50">Strategic Alignment (SDGs)</p>
                 <div class="flex flex-wrap gap-2">
                   <span
@@ -131,7 +131,7 @@ function getColorClass(theme: string) {
               </div>
 
               <!-- Core Initiatives -->
-              <div class="mb-10 p-8 bg-surface-container-low rounded-[32px] border border-outline-variant/10 group-hover:border-primary/20 transition-colors">
+              <div class="mb-10 p-8 bg-surface-container-low rounded-[32px] border border-outline-variant/10 group-hover:border-primary/20 transition-colors" v-if="area.initiatives && area.initiatives.length">
                  <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em] mb-8 opacity-50">Active Field Initiatives</p>
                  <ul class="space-y-6">
                    <li v-for="init in area.initiatives" :key="init.title" class="flex gap-4 items-start">
@@ -146,7 +146,7 @@ function getColorClass(theme: string) {
                  </ul>
               </div>
 
-              <div class="flex flex-wrap gap-4">
+              <!-- <div class="flex flex-wrap gap-4">
                 <NuxtLink
                   v-if="area.slug"
                   :to="`/programs/${area.slug}`"
@@ -159,7 +159,7 @@ function getColorClass(theme: string) {
                   Inquire about collaboration
                   <ArrowRight class="w-4 h-4 transition-transform group-hover/link:translate-x-1" />
                 </NuxtLink>
-              </div>
+              </div> -->
             </div>
           </div>
         </div>
@@ -172,7 +172,7 @@ function getColorClass(theme: string) {
 
        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
          <h2 class="text-3xl md:text-4xl font-display font-bold text-on-surface mb-6 tracking-tight">
-           Join the RuralNexus Ecosystem
+           Join the RuralNexus Network
          </h2>
          <p class="text-lg text-on-surface-variant font-body mb-12 max-w-2xl mx-auto opacity-80 leading-relaxed">
            Our programs scale through collaborative intelligence. We are seeking academic partners, field organizations, and technology hub collaborators.

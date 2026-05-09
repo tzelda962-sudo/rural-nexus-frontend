@@ -134,7 +134,7 @@ function typeIcon(type: Partner['type']) {
     <section class="py-20 bg-surface">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Collaborating Institutions</p>
-        <h2 class="text-3xl font-display font-bold mb-12">Our Partners</h2>
+        <h2 class="text-3xl font-display font-bold mb-12">Past and Current Collaborators</h2>
 
         <!-- Europe -->
         <div class="mb-14">

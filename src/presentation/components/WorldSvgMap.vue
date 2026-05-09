@@ -11,7 +11,6 @@ const hoveredCountry = ref<string | null>(null)
 const hoveredContinent = ref<string | null>(null)
 const isLoading = ref(true)
 const error = ref<string | null>(null)
-const isMounted = ref(false)
 const tooltip = ref<{ visible: boolean; x: number; y: number; title: string; content: string }>({
   visible: false,
   x: 0,
@@ -87,8 +86,6 @@ function updateHighlightedCountries() {
 }
 
 function applyStyles() {
-  if (typeof window === 'undefined') return
-  
   const svg = document.querySelector('svg')
   if (!svg) return
 
@@ -144,8 +141,6 @@ function hideTooltip() {
 }
 
 function attachEventListeners() {
-  if (typeof window === 'undefined') return
-  
   const svg = document.querySelector('svg')
   if (!svg) return
 
@@ -186,7 +181,7 @@ function zoomToContinent(continentName: string) {
 }
 
 async function initMap() {
-  if (typeof window === 'undefined' || !mapContainer.value) return
+  if (!mapContainer.value) return
 
   try {
     // Dynamically import Leaflet only on client
@@ -238,16 +233,13 @@ async function initMap() {
 }
 
 onMounted(() => {
-  isMounted.value = true
   initMap()
 })
 
 watch(
   () => props.countries,
   () => {
-    if (isMounted.value) {
-      updateHighlightedCountries()
-    }
+    updateHighlightedCountries()
   },
   { deep: true },
 )
