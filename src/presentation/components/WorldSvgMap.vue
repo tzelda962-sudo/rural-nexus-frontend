@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import type { InterventionCountry } from '@infrastructure/repositories/HttpPartnersRepository'
-import worldMapSvg from '/world-map.svg?raw'
 
 const props = defineProps<{ countries: InterventionCountry[] }>()
 
@@ -88,15 +87,26 @@ function attachEventListeners() {
   })
 }
 
-function loadSvg() {
+async function loadSvg() {
   if (typeof window === 'undefined' || !svgContainer.value) return
 
   try {
+    const response = await fetch('/world-map.svg')
+    if (!response.ok) throw new Error(`Failed to fetch SVG: ${response.status}`)
+    
+    const svgText = await response.text()
+    console.log('SVG text length:', svgText.length)
+    
+    if (!svgText || svgText.trim().length === 0) {
+      throw new Error('SVG file is empty')
+    }
+
     const parser = new DOMParser()
-    const svgDoc = parser.parseFromString(worldMapSvg, 'image/svg+xml')
+    const svgDoc = parser.parseFromString(svgText, 'image/svg+xml')
     
     if (svgDoc.documentElement.nodeName === 'parsererror') {
-      throw new Error('Failed to parse SVG')
+      const parserError = svgDoc.documentElement.textContent
+      throw new Error(`SVG parse error: ${parserError}`)
     }
     
     const svg = svgDoc.documentElement as SVGSVGElement
@@ -114,7 +124,8 @@ function loadSvg() {
     isLoading.value = false
     console.log('SVG map loaded successfully')
   } catch (err) {
-    error.value = (err as Error)?.message || 'Failed to load map'
+    const errorMsg = (err as Error)?.message || 'Failed to load map'
+    error.value = errorMsg
     isLoading.value = false
     console.error('Error loading SVG:', err)
   }
@@ -143,11 +154,11 @@ watch(
         ref="svgContainer"
         :class="{
           'min-h-[420px] flex items-center justify-center w-full': true,
-          'opacity-0': isLoading,
+          'opacity-0 absolute': isLoading,
           'opacity-100': !isLoading && !error,
         }"
       />
-      <div v-if="isLoading" class="min-h-[420px] absolute inset-0 flex items-center justify-center text-center text-sm text-on-surface-variant">
+      <div v-if="isLoading" class="min-h-[420px] flex items-center justify-center text-center text-sm text-on-surface-variant">
         Loading map...
       </div>
     </div>
