@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, nextTick } from 'vue'
 import type { InterventionCountry } from '@infrastructure/repositories/HttpPartnersRepository'
+import worldMapSvg from '/world-map.svg?raw'
 
 const props = defineProps<{ countries: InterventionCountry[] }>()
 
@@ -89,27 +90,19 @@ async function loadSvg() {
   if (typeof window === 'undefined') return
 
   try {
-    const response = await fetch('/world-map.svg')
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-    
-    const svgText = await response.text()
-    
-    // Parse SVG as DOM
     const parser = new DOMParser()
-    const svgDoc = parser.parseFromString(svgText, 'image/svg+xml')
+    const svgDoc = parser.parseFromString(worldMapSvg, 'image/svg+xml')
     
     if (svgDoc.documentElement.nodeName === 'parsererror') {
       throw new Error('Failed to parse SVG')
     }
     
     const svg = svgDoc.documentElement as SVGSVGElement
-    svg.setAttribute('style', 'width: 100%; height: auto; max-width: 100%;')
+    svg.setAttribute('style', 'width: 100%; height: auto; max-width: 100%; display: block;')
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet')
     
-    // Replace content
     await nextTick()
     
-    // Use a container to hold the SVG
     const container = document.getElementById('svg-map-container')
     if (container) {
       container.innerHTML = ''
@@ -121,6 +114,9 @@ async function loadSvg() {
       await nextTick()
       updateHighlightedCountries()
       attachEventListeners()
+      console.log('SVG map loaded successfully')
+    } else {
+      throw new Error('Container element not found')
     }
   } catch (err) {
     error.value = (err as Error)?.message || 'Failed to load map'
@@ -179,9 +175,5 @@ watch(
 :deep(path) {
   cursor: pointer;
   transition: fill 0.2s ease;
-}
-
-:deep(path:hover) {
-  filter: brightness(0.9);
 }
 </style>
