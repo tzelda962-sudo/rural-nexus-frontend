@@ -1,14 +1,15 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, nextTick } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import type { InterventionCountry } from '@infrastructure/repositories/HttpPartnersRepository'
 import worldMapSvg from '/world-map.svg?raw'
 
 const props = defineProps<{ countries: InterventionCountry[] }>()
 
+const svgContainer = ref<HTMLDivElement>()
 const svgElement = ref<SVGSVGElement>()
 const highlightedCountries = ref<Set<string>>(new Set())
 const hoveredCountry = ref<string | null>(null)
-const svgLoaded = ref(false)
+const isLoading = ref(true)
 const error = ref<string | null>(null)
 
 const highlightColor = '#22c55e'
@@ -78,6 +79,7 @@ function attachEventListeners() {
   if (!svgElement.value) return
 
   const paths = svgElement.value.querySelectorAll('path[id]')
+  console.log('Found', paths.length, 'country paths')
   
   paths.forEach((path) => {
     path.addEventListener('mouseenter', handleMouseEnter)
@@ -86,8 +88,8 @@ function attachEventListeners() {
   })
 }
 
-async function loadSvg() {
-  if (typeof window === 'undefined') return
+function loadSvg() {
+  if (typeof window === 'undefined' || !svgContainer.value) return
 
   try {
     const parser = new DOMParser()
@@ -101,31 +103,25 @@ async function loadSvg() {
     svg.setAttribute('style', 'width: 100%; height: auto; max-width: 100%; display: block;')
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet')
     
-    await nextTick()
+    svgContainer.value.innerHTML = ''
+    svgContainer.value.appendChild(svg)
+    svgElement.value = svg
     
-    const container = document.getElementById('svg-map-container')
-    if (container) {
-      container.innerHTML = ''
-      container.appendChild(svg)
-      svgElement.value = svg
-      svgLoaded.value = true
-      error.value = null
-      
-      await nextTick()
-      updateHighlightedCountries()
-      attachEventListeners()
-      console.log('SVG map loaded successfully')
-    } else {
-      throw new Error('Container element not found')
-    }
+    updateHighlightedCountries()
+    attachEventListeners()
+    
+    error.value = null
+    isLoading.value = false
+    console.log('SVG map loaded successfully')
   } catch (err) {
     error.value = (err as Error)?.message || 'Failed to load map'
+    isLoading.value = false
     console.error('Error loading SVG:', err)
   }
 }
 
 onMounted(() => {
-  loadSvg()
+  setTimeout(() => loadSvg(), 0)
 })
 
 watch(
@@ -143,15 +139,16 @@ watch(
       <div v-if="error" class="min-h-[420px] flex items-center justify-center text-center text-sm text-destructive">
         {{ error }}
       </div>
-      <div v-else-if="!svgLoaded" class="min-h-[420px] flex items-center justify-center text-center text-sm text-on-surface-variant">
-        Loading map...
-      </div>
       <div 
-        v-else
-        id="svg-map-container"
-        class="min-h-[420px] flex items-center justify-center w-full"
-      >
-        <!-- SVG will be loaded here -->
+        ref="svgContainer"
+        :class="{
+          'min-h-[420px] flex items-center justify-center w-full': true,
+          'opacity-0': isLoading,
+          'opacity-100': !isLoading && !error,
+        }"
+      />
+      <div v-if="isLoading" class="min-h-[420px] absolute inset-0 flex items-center justify-center text-center text-sm text-on-surface-variant">
+        Loading map...
       </div>
     </div>
     <div class="mt-4 flex items-center gap-6 text-sm font-body text-on-surface-variant">
