@@ -88,7 +88,7 @@
               <div>
                 <p class="font-display font-bold text-xl mb-1">{{ pageData?.hqSection?.orgName ?? 'RuralNexus Innovation Center' }}</p>
                 <p class="text-on-surface-variant font-body mb-4 whitespace-pre-line">{{ pageData?.hqSection?.address ?? '123 Agritech Valley, Innovation District\nGeneva, 1000, Switzerland' }}</p>
-                <a :href="pageData?.hqSection?.directionsUrl ?? '#'" class="text-primary font-bold text-sm hover:underline">Get Directions &rarr;</a>
+                <a :href="directionsUrl" target="_blank" rel="noopener noreferrer" class="text-primary font-bold text-sm hover:underline">Get Directions &rarr;</a>
               </div>
             </div>
           </div>
@@ -137,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, type Ref } from 'vue';
 import { usePayloadLivePreview } from '../composables/usePayloadLivePreview';
 
 type ContactPageGlobal = {
@@ -169,7 +169,7 @@ const { data: rawPage } = useLazyAsyncData('contact-page-global', () =>
   $fetch<ContactPageGlobal>(`${apiBase}/api/globals/contact-page`),
 )
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage)
+const { previewData: pageData } = usePayloadLivePreview<ContactPageGlobal>(rawPage as Ref<ContactPageGlobal | null>)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Contact — RuralNexus',
@@ -179,8 +179,9 @@ useHead({
   ],
 })
 
-const interestOptions = computed(() => pageData.value?.formSection?.interestAreas?.map(a => a.value) ?? [])
+const interestOptions = computed(() => pageData.value?.formSection?.interestAreas?.map((a: { value: string }) => a.value) ?? [])
 const departments = computed(() => pageData.value?.directContacts?.contacts ?? [])
+const directionsUrl = computed(() => pageData.value?.hqSection?.directionsUrl || '#')
 
 const status = ref<'sending' | 'success' | 'error' | ''>('')
 const errorMsg = ref('')
