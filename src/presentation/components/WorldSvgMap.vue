@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref, watch, nextTick } from 'vue'
 import type { InterventionCountry } from '@infrastructure/repositories/HttpPartnersRepository'
 
 const props = defineProps<{ countries: InterventionCountry[] }>()
 
-const svgContainer = ref<HTMLDivElement>()
+const svgElement = ref<SVGSVGElement>()
 const highlightedCountries = ref<Set<string>>(new Set())
 const hoveredCountry = ref<string | null>(null)
+const svgLoaded = ref(false)
+const error = ref<string | null>(null)
 
 const highlightColor = '#22c55e'
 const highlightHover = '#16a34a'
@@ -25,17 +27,13 @@ function updateHighlightedCountries() {
 }
 
 function applyStyles() {
-  if (!svgContainer.value) return
+  if (!svgElement.value) return
 
-  const svg = svgContainer.value.querySelector('svg')
-  if (!svg) return
-
-  // Get all path elements
-  const paths = svg.querySelectorAll('path[id]')
+  const paths = svgElement.value.querySelectorAll('path[id]')
   
   paths.forEach((path: SVGPathElement) => {
     const countryId = path.getAttribute('id')
-    if (!countryId) return
+    if (!countryId || countryId.length !== 2) return
 
     const isHighlighted = highlightedCountries.value.has(countryId)
     const isHovered = hoveredCountry.value === countryId
@@ -71,19 +69,14 @@ function handleClick(event: MouseEvent) {
   const path = event.target as SVGPathElement
   const countryId = path.getAttribute('id')
   if (countryId) {
-    // Emit event for click on country
-    // You can extend this for more interactivity
     console.log('Clicked country:', countryId)
   }
 }
 
 function attachEventListeners() {
-  if (!svgContainer.value) return
+  if (!svgElement.value) return
 
-  const svg = svgContainer.value.querySelector('svg')
-  if (!svg) return
-
-  const paths = svg.querySelectorAll('path[id]')
+  const paths = svgElement.value.querySelectorAll('path[id]')
   
   paths.forEach((path) => {
     path.addEventListener('mouseenter', handleMouseEnter)
@@ -92,30 +85,47 @@ function attachEventListeners() {
   })
 }
 
-function loadSvg() {
-  if (typeof window === 'undefined' || !svgContainer.value) return
+async function loadSvg() {
+  if (typeof window === 'undefined') return
 
-  // Load the SVG file
-  fetch('/world-map.svg')
-    .then((response) => response.text())
-    .then((svgText) => {
-      if (svgContainer.value) {
-        svgContainer.value.innerHTML = svgText
-        // Make SVG responsive
-        const svg = svgContainer.value.querySelector('svg')
-        if (svg) {
-          svg.style.width = '100%'
-          svg.style.height = 'auto'
-          svg.style.maxWidth = '100%'
-          svg.setAttribute('preserveAspectRatio', 'xMidYMid meet')
-        }
-        updateHighlightedCountries()
-        attachEventListeners()
-      }
-    })
-    .catch((error) => {
-      console.error('Error loading SVG:', error)
-    })
+  try {
+    const response = await fetch('/world-map.svg')
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+    
+    const svgText = await response.text()
+    
+    // Parse SVG as DOM
+    const parser = new DOMParser()
+    const svgDoc = parser.parseFromString(svgText, 'image/svg+xml')
+    
+    if (svgDoc.documentElement.nodeName === 'parsererror') {
+      throw new Error('Failed to parse SVG')
+    }
+    
+    const svg = svgDoc.documentElement as SVGSVGElement
+    svg.setAttribute('style', 'width: 100%; height: auto; max-width: 100%;')
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet')
+    
+    // Replace content
+    await nextTick()
+    
+    // Use a container to hold the SVG
+    const container = document.getElementById('svg-map-container')
+    if (container) {
+      container.innerHTML = ''
+      container.appendChild(svg)
+      svgElement.value = svg
+      svgLoaded.value = true
+      error.value = null
+      
+      await nextTick()
+      updateHighlightedCountries()
+      attachEventListeners()
+    }
+  } catch (err) {
+    error.value = (err as Error)?.message || 'Failed to load map'
+    console.error('Error loading SVG:', err)
+  }
 }
 
 onMounted(() => {
@@ -134,9 +144,16 @@ watch(
 <template>
   <div class="relative w-full select-none">
     <div class="overflow-hidden rounded-[28px] bg-surface-container p-4 shadow-sm">
+      <div v-if="error" class="min-h-[420px] flex items-center justify-center text-center text-sm text-destructive">
+        {{ error }}
+      </div>
+      <div v-else-if="!svgLoaded" class="min-h-[420px] flex items-center justify-center text-center text-sm text-on-surface-variant">
+        Loading map...
+      </div>
       <div 
-        ref="svgContainer"
-        class="min-h-[420px] flex items-center justify-center"
+        v-else
+        id="svg-map-container"
+        class="min-h-[420px] flex items-center justify-center w-full"
       >
         <!-- SVG will be loaded here -->
       </div>
