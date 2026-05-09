@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, computed } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import type { InterventionCountry } from '@infrastructure/repositories/HttpPartnersRepository'
 
 const props = defineProps<{ countries: InterventionCountry[] }>()
@@ -146,7 +146,7 @@ function hideTooltip() {
 function handleMouseEnter(event: MouseEvent) {
   const path = event.target as SVGPathElement
   const countryId = path.getAttribute('id')
-  if (countryId) {
+  if (countryId && !hoveredContinent.value) {
     hoveredCountry.value = countryId
     applyStyles()
   }
@@ -220,7 +220,7 @@ async function loadSvg() {
     const svg = svgDoc.documentElement as SVGSVGElement
     svg.setAttribute('width', '100%')
     svg.setAttribute('height', 'auto')
-    svg.setAttribute('style', 'display: block; width: 100%; height: auto; max-width: 100%;')
+    svg.setAttribute('style', 'display: block; width: 100%; height: auto; max-width: 100%; pointer-events: auto;')
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet')
     
     svgContainer.value.innerHTML = ''
@@ -245,6 +245,7 @@ async function loadSvg() {
 function handleContinentHover(continentName: string) {
   if (isZoomed.value) return
   hoveredContinent.value = continentName
+  hoveredCountry.value = null
   applyStyles()
 }
 
@@ -277,7 +278,7 @@ watch(
         v-else
         ref="svgContainer"
         class="w-full bg-surface-container relative"
-        style="min-height: 420px;"
+        style="min-height: 420px; pointer-events: auto;"
         @mouseleave="hideTooltip"
       />
       <div v-if="isLoading" class="absolute inset-0 min-h-[420px] flex items-center justify-center text-center text-sm text-on-surface-variant bg-surface-container">
@@ -288,20 +289,20 @@ watch(
       <button
         v-if="isZoomed"
         @click="zoomOut"
-        class="absolute top-4 right-4 px-3 py-1 bg-primary text-on-primary text-sm rounded hover:opacity-90 z-10"
+        class="absolute top-4 right-4 px-3 py-1 bg-primary text-on-primary text-sm rounded hover:opacity-90 z-20 pointer-events-auto"
       >
         ← Zoom Out
       </button>
 
       <!-- Continent buttons (only show when not zoomed) -->
-      <div v-if="!isZoomed && !isLoading" class="absolute top-4 right-4 flex gap-2 flex-wrap justify-end z-10 max-w-xs">
+      <div v-if="!isZoomed && !isLoading" class="absolute top-4 right-4 flex gap-2 flex-wrap justify-end z-20 max-w-xs pointer-events-auto">
         <button
           v-for="(continent, name) in continents"
           :key="name"
           @mouseenter="handleContinentHover(name)"
           @mouseleave="handleContinentLeave"
           @click="zoomToContinent(name)"
-          class="px-2 py-1 text-xs bg-surface-container-high hover:bg-primary text-on-surface-variant hover:text-on-primary rounded transition-colors"
+          class="px-2 py-1 text-xs bg-surface-container-high hover:bg-primary text-on-surface-variant hover:text-on-primary rounded transition-colors pointer-events-auto"
         >
           {{ name }}
         </button>
@@ -341,10 +342,12 @@ watch(
   width: 100%;
   height: auto;
   transition: all 0.3s ease;
+  pointer-events: auto;
 }
 
 :deep(path) {
   cursor: pointer;
   transition: fill 0.2s ease;
+  pointer-events: auto;
 }
 </style>
