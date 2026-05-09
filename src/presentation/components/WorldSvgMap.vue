@@ -1,18 +1,18 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
+import L from 'leaflet'
 import type { InterventionCountry } from '@infrastructure/repositories/HttpPartnersRepository'
 
 const props = defineProps<{ countries: InterventionCountry[] }>()
 
-const svgContainer = ref<HTMLDivElement>()
-const svgElement = ref<SVGSVGElement>()
+const mapContainer = ref<HTMLDivElement>()
+const map = ref<L.Map>()
+const svgOverlay = ref<L.SVGOverlay>()
 const highlightedCountries = ref<Set<string>>(new Set())
 const hoveredCountry = ref<string | null>(null)
 const hoveredContinent = ref<string | null>(null)
 const isLoading = ref(true)
 const error = ref<string | null>(null)
-const isZoomed = ref(false)
-const zoomedContinent = ref<string | null>(null)
 const tooltip = ref<{ visible: boolean; x: number; y: number; title: string; content: string }>({
   visible: false,
   x: 0,
@@ -26,42 +26,42 @@ const highlightHover = '#16a34a'
 const baseColor = '#CBD5E1'
 const baseHoverColor = '#1E293B'
 
-// Continent groupings with SVG coordinates
-const continents: Record<string, { name: string; countries: string[]; x: number; y: number; width: number; height: number }> = {
+// Continent groupings
+const continents: Record<string, { name: string; countries: string[]; lat: number; lng: number; zoom: number }> = {
   Africa: {
     name: 'Africa',
     countries: ['DZ','AO','BJ','BW','BF','BI','CM','CV','CF','TD','KM','CG','CD','CI','DJ','EG','GQ','ER','SZ','ET','GA','GM','GH','GN','GW','KE','LS','LR','LY','MG','MW','ML','MR','MU','MA','MZ','NA','NE','NG','RW','ST','SN','SC','SL','SO','ZA','SS','SD','TZ','TG','TN','UG','EH','ZM','ZW'],
-    x: 350, y: 340, width: 200, height: 200,
+    lat: 0, lng: 20, zoom: 4,
   },
   Europe: {
     name: 'Europe',
     countries: ['AL','AD','AT','BY','BE','BA','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IS','IE','IT','LV','LI','LT','LU','MT','MD','MC','ME','NL','MK','NO','PL','PT','RO','RU','SM','RS','SK','SI','ES','SE','CH','TR','UA','GB','VA'],
-    x: 420, y: 260, width: 250, height: 120,
+    lat: 50, lng: 15, zoom: 4,
   },
   Asia: {
     name: 'Asia',
     countries: ['AF','AM','AZ','BH','BD','BT','BN','KH','CN','GE','IN','ID','IR','IQ','IL','JP','JO','KZ','KW','KG','LA','LB','MY','MV','MN','MM','NP','KP','OM','PK','PS','PH','QA','SA','SG','KR','XK','LK','SY','TW','TJ','TH','TL','TR','TM','AE','UZ','VN','YE'],
-    x: 520, y: 300, width: 350, height: 200,
+    lat: 30, lng: 100, zoom: 3,
   },
   'North America': {
     name: 'North America',
     countries: ['CA','MX','US','GL','BM','BS','CU','DO','HT','JM','KY','PR','SX','TC','VI'],
-    x: 100, y: 200, width: 160, height: 160,
+    lat: 35, lng: -95, zoom: 4,
   },
   'South America': {
     name: 'South America',
     countries: ['AR','BO','BR','CL','CO','EC','GY','PY','PE','SR','UY','VE'],
-    x: 280, y: 400, width: 120, height: 160,
+    lat: -12, lng: -60, zoom: 3,
   },
   Oceania: {
     name: 'Oceania',
     countries: ['AU','FJ','KI','MH','FM','NR','NC','NZ','PG','WS','SB','TO','TV','VU'],
-    x: 720, y: 450, width: 150, height: 130,
+    lat: -20, lng: 150, zoom: 3,
   },
   Antarctica: {
     name: 'Antarctica',
     countries: ['AQ'],
-    x: 0, y: 600, width: 1008, height: 50,
+    lat: -85, lng: 0, zoom: 2,
   },
 }
 
@@ -88,9 +88,10 @@ function updateHighlightedCountries() {
 }
 
 function applyStyles() {
-  if (!svgElement.value) return
+  const svg = document.querySelector('svg')
+  if (!svg) return
 
-  const paths = svgElement.value.querySelectorAll('path[id]')
+  const paths = svg.querySelectorAll('path[id]')
   
   paths.forEach((path: SVGPathElement) => {
     const countryId = path.getAttribute('id')
@@ -112,6 +113,7 @@ function applyStyles() {
 
     path.style.cursor = 'pointer'
     path.style.transition = 'fill 0.2s ease'
+    path.style.pointerEvents = 'auto'
   })
 }
 
@@ -140,155 +142,136 @@ function hideTooltip() {
   tooltip.value.visible = false
 }
 
-function handleMouseEnter(event: MouseEvent) {
-  const path = event.target as SVGPathElement
-  const countryId = path.getAttribute('id')
-  if (countryId && !hoveredContinent.value) {
-    hoveredCountry.value = countryId
-    applyStyles()
-  }
-}
-
-function handleMouseLeave() {
-  hoveredCountry.value = null
-  applyStyles()
-}
-
-function handleClick(event: MouseEvent) {
-  const path = event.target as SVGPathElement
-  const countryId = path.getAttribute('id')
-  if (countryId) {
-    showCountryInfo(countryId, event)
-  }
-}
-
 function attachEventListeners() {
-  if (!svgElement.value) return
+  const svg = document.querySelector('svg')
+  if (!svg) return
 
-  const paths = svgElement.value.querySelectorAll('path[id]')
+  const paths = svg.querySelectorAll('path[id]')
   
   paths.forEach((path) => {
-    path.addEventListener('mouseenter', handleMouseEnter)
-    path.addEventListener('mouseleave', handleMouseLeave)
-    path.addEventListener('click', handleClick)
-  })
-}
+    path.addEventListener('mouseenter', (e: Event) => {
+      const pathEl = e.target as SVGPathElement
+      const countryId = pathEl.getAttribute('id')
+      if (countryId && !hoveredContinent.value) {
+        hoveredCountry.value = countryId
+        applyStyles()
+      }
+    })
 
-function createContinentOverlays() {
-  if (!svgElement.value) return
-
-  // Find or create a group for continent overlays
-  let overlayGroup = svgElement.value.querySelector('#continent-overlays') as SVGGElement
-  if (!overlayGroup) {
-    overlayGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g')
-    overlayGroup.setAttribute('id', 'continent-overlays')
-    svgElement.value.appendChild(overlayGroup)
-  } else {
-    overlayGroup.innerHTML = ''
-  }
-
-  // Create rect overlays for each continent
-  Object.entries(continents).forEach(([continentName, data]) => {
-    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
-    rect.setAttribute('x', data.x.toString())
-    rect.setAttribute('y', data.y.toString())
-    rect.setAttribute('width', data.width.toString())
-    rect.setAttribute('height', data.height.toString())
-    rect.setAttribute('fill', 'transparent')
-    rect.setAttribute('stroke', 'none')
-    rect.setAttribute('data-continent', continentName)
-    rect.style.cursor = 'pointer'
-
-    rect.addEventListener('mouseenter', () => {
-      hoveredContinent.value = continentName
+    path.addEventListener('mouseleave', () => {
+      hoveredCountry.value = null
       applyStyles()
     })
 
-    rect.addEventListener('mouseleave', () => {
-      hoveredContinent.value = null
-      applyStyles()
+    path.addEventListener('click', (e: Event) => {
+      const pathEl = e.target as SVGPathElement
+      const countryId = pathEl.getAttribute('id')
+      if (countryId) {
+        showCountryInfo(countryId, e as MouseEvent)
+      }
     })
-
-    rect.addEventListener('click', () => {
-      zoomToContinent(continentName)
-    })
-
-    overlayGroup.appendChild(rect)
   })
 }
 
 function zoomToContinent(continentName: string) {
-  if (!svgElement.value) return
+  if (!map.value) return
   const continent = continents[continentName]
   if (!continent) return
 
-  // Calculate viewBox to center the continent with padding
-  const padding = 20
-  const viewBox = `${continent.x - padding} ${continent.y - padding} ${continent.width + padding * 2} ${continent.height + padding * 2}`
-  
-  svgElement.value.setAttribute('viewBox', viewBox)
-  isZoomed.value = true
-  zoomedContinent.value = continentName
+  map.value.setView([continent.lat, continent.lng], continent.zoom)
   hoveredContinent.value = continentName
 }
 
-function zoomOut() {
-  if (!svgElement.value) return
-  svgElement.value.setAttribute('viewBox', '0 0 1008 650')
-  isZoomed.value = false
-  zoomedContinent.value = null
-  hoveredContinent.value = null
-}
-
-async function loadSvg() {
-  if (typeof window === 'undefined' || !svgContainer.value) return
+async function initMap() {
+  if (typeof window === 'undefined' || !mapContainer.value) return
 
   try {
+    // Initialize map
+    map.value = L.map(mapContainer.value, {
+      crs: L.CRS.Simple,
+      zoom: 2,
+      center: [0, 0],
+      zoomControl: true,
+      attributionControl: false,
+      minZoom: 1,
+      maxZoom: 6,
+    })
+
+    // Load SVG
     const response = await fetch('/world-map.svg')
     if (!response.ok) throw new Error(`Failed to fetch SVG: ${response.status}`)
     
     const svgText = await response.text()
-    console.log('SVG text length:', svgText.length)
-    
-    if (!svgText || svgText.trim().length === 0) {
-      throw new Error('SVG file is empty')
-    }
+    console.log('SVG loaded:', svgText.length, 'bytes')
 
-    const parser = new DOMParser()
-    const svgDoc = parser.parseFromString(svgText, 'image/svg+xml')
+    // Create SVG overlay
+    const bounds = L.latLngBounds([[-90, -180], [90, 180]])
+    const svgElement = new DOMParser().parseFromString(svgText, 'image/svg+xml').documentElement as SVGElement
     
-    if (svgDoc.documentElement.nodeName === 'parsererror') {
-      throw new Error('Failed to parse SVG')
-    }
-    
-    const svg = svgDoc.documentElement as SVGSVGElement
-    svg.setAttribute('width', '100%')
-    svg.setAttribute('height', 'auto')
-    svg.setAttribute('style', 'display: block; width: 100%; height: auto; max-width: 100%;')
-    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet')
-    
-    svgContainer.value.innerHTML = ''
-    svgContainer.value.appendChild(svg)
-    svgElement.value = svg
-    
+    svgOverlay.value = L.svgOverlay(svgElement, bounds).addTo(map.value)
+
+    // Build continent map and attach listeners
     buildContinentMap()
-    createContinentOverlays()
-    updateHighlightedCountries()
-    attachEventListeners()
     
+    // Wait for SVG to be in DOM
+    setTimeout(() => {
+      updateHighlightedCountries()
+      attachEventListeners()
+      createContinentAreas()
+    }, 100)
+
     error.value = null
     isLoading.value = false
-    console.log('SVG map loaded successfully')
+    console.log('Map initialized successfully')
   } catch (err) {
     const errorMsg = (err as Error)?.message || 'Failed to load map'
     error.value = errorMsg
     isLoading.value = false
-    console.error('Error loading SVG:', err)
+    console.error('Error initializing map:', err)
   }
 }
 
+function createContinentAreas() {
+  const svg = document.querySelector('svg')
+  if (!svg) return
+
+  // Create continent hover areas
+  Object.entries(continents).forEach(([continentName, data]) => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+    g.setAttribute('data-continent', continentName)
+
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+    rect.setAttribute('x', '0')
+    rect.setAttribute('y', '0')
+    rect.setAttribute('width', '100%')
+    rect.setAttribute('height', '100%')
+    rect.setAttribute('fill', 'transparent')
+    rect.style.pointerEvents = 'none'
+
+    g.appendChild(rect)
+    g.style.cursor = 'pointer'
+
+    // Only track hover, don't block country events
+    g.addEventListener('mouseenter', () => {
+      hoveredContinent.value = continentName
+      applyStyles()
+    })
+
+    g.addEventListener('mouseleave', () => {
+      hoveredContinent.value = null
+      applyStyles()
+    })
+
+    g.addEventListener('click', () => {
+      zoomToContinent(continentName)
+    })
+
+    svg.appendChild(g)
+  })
+}
+
 onMounted(() => {
-  setTimeout(() => loadSvg(), 0)
+  initMap()
 })
 
 watch(
@@ -302,29 +285,18 @@ watch(
 
 <template>
   <div class="relative w-full select-none">
-    <div class="overflow-hidden rounded-[28px] bg-surface-container p-4 shadow-sm relative">
-      <div v-if="error" class="min-h-[420px] flex items-center justify-center text-center text-sm text-destructive">
+    <div class="rounded-[28px] bg-surface-container shadow-sm overflow-hidden">
+      <div v-if="error" class="h-[420px] flex items-center justify-center text-center text-sm text-destructive p-4">
         {{ error }}
       </div>
       <div 
         v-else
-        ref="svgContainer"
-        class="w-full bg-surface-container relative"
-        style="min-height: 420px;"
-        @mouseleave="hideTooltip"
+        ref="mapContainer"
+        class="h-[420px] w-full"
       />
-      <div v-if="isLoading" class="absolute inset-0 min-h-[420px] flex items-center justify-center text-center text-sm text-on-surface-variant bg-surface-container">
+      <div v-if="isLoading" class="absolute inset-0 h-[420px] flex items-center justify-center text-center text-sm text-on-surface-variant bg-surface-container/80">
         Loading map...
       </div>
-
-      <!-- Zoom out button -->
-      <button
-        v-if="isZoomed"
-        @click="zoomOut"
-        class="absolute top-4 right-4 px-3 py-1 bg-primary text-on-primary text-sm rounded hover:opacity-90 z-20 pointer-events-auto"
-      >
-        ← Zoom Out
-      </button>
     </div>
 
     <!-- Tooltip -->
@@ -357,12 +329,17 @@ watch(
 </template>
 
 <style scoped>
+:deep(.leaflet-container) {
+  font-family: inherit;
+  background: white;
+}
+
+:deep(.leaflet-control-zoom) {
+  border: 1px solid var(--color-outline, #ccc);
+}
+
 :deep(svg) {
-  user-select: none;
-  display: block;
-  width: 100%;
-  height: auto;
-  transition: all 0.3s ease;
+  pointer-events: auto;
 }
 
 :deep(path) {
