@@ -110,8 +110,14 @@ async function loadSvg() {
     }
     
     const svg = svgDoc.documentElement as SVGSVGElement
-    svg.setAttribute('style', 'width: 100%; height: auto; max-width: 100%; display: block;')
+    
+    // Set explicit dimensions and styles
+    svg.setAttribute('width', '100%')
+    svg.setAttribute('height', 'auto')
+    svg.setAttribute('style', 'display: block; width: 100%; height: auto; max-width: 100%;')
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet')
+    
+    console.log('SVG dimensions:', svg.getAttribute('viewBox'))
     
     svgContainer.value.innerHTML = ''
     svgContainer.value.appendChild(svg)
@@ -151,12 +157,10 @@ watch(
         {{ error }}
       </div>
       <div 
+        v-else
         ref="svgContainer"
-        :class="{
-          'min-h-[420px] flex items-center justify-center w-full': true,
-          'opacity-0 absolute': isLoading,
-          'opacity-100': !isLoading && !error,
-        }"
+        class="w-full bg-surface-container"
+        style="min-height: 420px;"
       />
       <div v-if="isLoading" class="min-h-[420px] flex items-center justify-center text-center text-sm text-on-surface-variant">
         Loading map...
@@ -178,6 +182,9 @@ watch(
 <style scoped>
 :deep(svg) {
   user-select: none;
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 :deep(path) {
