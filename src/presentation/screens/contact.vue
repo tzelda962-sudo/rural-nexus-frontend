@@ -166,7 +166,7 @@ const config = useRuntimeConfig()
 const apiBase = config.public.apiBase as string
 
 const { data: rawPage } = useLazyAsyncData('contact-page-global', () =>
-  $fetch<ContactPageGlobal>(`${apiBase}/api/globals/contact-page`),
+  $fetch<ContactPageGlobal>(`${apiBase}/api/globals/contact-page?draft=true`),
 )
 
 const { previewData: pageData } = usePayloadLivePreview<ContactPageGlobal>(rawPage as Ref<ContactPageGlobal | null>)
@@ -181,7 +181,11 @@ useHead({
 
 const interestOptions = computed(() => pageData.value?.formSection?.interestAreas?.map((a: { value: string }) => a.value) ?? [])
 const departments = computed(() => pageData.value?.directContacts?.contacts ?? [])
-const directionsUrl = computed(() => pageData.value?.hqSection?.directionsUrl || '#')
+const directionsUrl = computed(() => {
+  const url = pageData.value?.hqSection?.directionsUrl
+  if (!url || url === '#') return '#'
+  return url.startsWith('http') || url.startsWith('/') || url.startsWith('mailto:') ? url : `https://${url}`
+})
 
 const status = ref<'sending' | 'success' | 'error' | ''>('')
 const errorMsg = ref('')
