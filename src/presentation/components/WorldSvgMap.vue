@@ -91,13 +91,14 @@ function applyStyles() {
 
   const paths = svg.querySelectorAll('path[id]')
   
-  paths.forEach((path: SVGPathElement) => {
+  paths.forEach((el) => {
+    const path = el as SVGPathElement
     const countryId = path.getAttribute('id')
     if (!countryId) return
 
     const isHighlighted = highlightedCountries.value.has(countryId)
     const isHovered = hoveredCountry.value === countryId
-    const isContinentHovered = hoveredContinent.value && continents[hoveredContinent.value].countries.includes(countryId)
+    const isContinentHovered = hoveredContinent.value && continents[hoveredContinent.value]?.countries.includes(countryId)
 
     if (isHovered) {
       path.style.fill = highlightColor
@@ -208,7 +209,7 @@ async function initMap() {
     // Create SVG overlay
     const bounds = L.latLngBounds([[-90, -180], [90, 180]])
     const parser = new DOMParser()
-    const svgElement = parser.parseFromString(svgText, 'image/svg+xml').documentElement as SVGElement
+    const svgElement = parser.parseFromString(svgText, 'image/svg+xml').documentElement as unknown as SVGElement
     
     L.svgOverlay(svgElement, bounds).addTo(map.value)
 

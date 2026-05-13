@@ -45,7 +45,7 @@ const { data: rawPage } = useLazyAsyncData('events-page-global', () =>
   $fetch<EventsPageGlobal>(`${apiBase}/api/globals/events-page`),
 )
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage)
+const { previewData: pageData } = usePayloadLivePreview<EventsPageGlobal>(rawPage)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Action Hub — RuralNexus',

@@ -59,7 +59,7 @@ const { data: allResources } = useLazyAsyncData('researchData', () =>
   $fetch<{ docs: PayloadPub[] }>(`${apiBase}/api/publications?limit=200&sort=-publishedDate&depth=1`),
 )
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage)
+const { previewData: pageData } = usePayloadLivePreview<ResearchPageGlobal>(rawPage)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Research & Methodologies — RuralNexus',

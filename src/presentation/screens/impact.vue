@@ -33,7 +33,7 @@ const { data: metricsData } = useLazyAsyncData('impact-metrics', () =>
   $fetch<{ docs: PayloadMetric[] }>(`${apiBase}/api/impact-metrics?limit=50&depth=1&sort=order`),
 )
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage)
+const { previewData: pageData } = usePayloadLivePreview<ImpactPageGlobal>(rawPage)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Impact Metrics — RuralNexus',

@@ -42,7 +42,7 @@ const { data: galleryData } = useLazyAsyncData('gallery', () =>
   $fetch<{ docs: PayloadGalleryItem[] }>(`${apiBase}/api/gallery?limit=100`),
 )
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage)
+const { previewData: pageData } = usePayloadLivePreview<GalleryPageGlobal>(rawPage)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Media Gallery — RuralNexus',

@@ -31,7 +31,7 @@ const { data: homeData } = useLazyAsyncData('programsPillars', () =>
   ).execute(),
 )
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage)
+const { previewData: pageData } = usePayloadLivePreview<ProgramsPageGlobal>(rawPage)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Our Programs: Structural Glue — RuralNexus',

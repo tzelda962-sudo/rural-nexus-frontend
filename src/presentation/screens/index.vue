@@ -29,18 +29,19 @@
         </p>
         <div class="flex flex-col sm:flex-row gap-6 justify-center">
           <NuxtLink
+            :to="page?.hero?.secondaryCta?.path ?? '/about'"
+            class="px-10 py-5 border border-white/20 text-white rounded-2xl font-bold hover:bg-white/5 transition-all backdrop-blur-sm"
+          >
+            {{ page?.hero?.secondaryCta?.label ?? 'Who We Are' }}
+          </NuxtLink>
+          <NuxtLink
             :to="page?.hero?.primaryCta?.path ?? '/programs'"
             class="group px-10 py-5 bg-gradient-to-br from-primary to-primary-container text-white rounded-2xl font-bold hover:shadow-2xl hover:shadow-primary/30 transition-all flex items-center gap-3"
           >
             {{ page?.hero?.primaryCta?.label ?? 'Explore Our Programs' }}
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
           </NuxtLink>
-          <NuxtLink
-            :to="page?.hero?.secondaryCta?.path ?? '/about'"
-            class="px-10 py-5 border border-white/20 text-white rounded-2xl font-bold hover:bg-white/5 transition-all backdrop-blur-sm"
-          >
-            {{ page?.hero?.secondaryCta?.label ?? 'Who We Are' }}
-          </NuxtLink>
+          
         </div>
       </div>
     </section>
@@ -81,7 +82,7 @@
           <div class="relative">
             <div class="aspect-square bg-surface-container-low rounded-[60px] overflow-hidden hex-mask shadow-2xl relative z-10">
               <img
-                :src="page?.whoWeAre?.image?.url ?? 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'"
+                :src="page?.whoWeAre?.image?.url ?? '/who-we-are-background.jpeg'"
                 alt="Rural Innovation"
                 class="w-full h-full object-cover"
               />
@@ -111,7 +112,7 @@
           <div v-for="t in (testimonialsData?.docs ?? [])" :key="t.id" class="p-10 bg-surface rounded-[40px] shadow-sm hover:shadow-xl transition-all text-left group">
             <svg class="h-10 w-10 text-amber mb-8 opacity-30 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
             <p class="font-body text-on-surface-variant text-lg italic mb-10 leading-relaxed">"{{ t.quote }}"</p>
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4" v-if="t.organization">
               <div class="w-12 h-12 rounded-full overflow-hidden grayscale group-hover:grayscale-0 transition-all">
                 <img v-if="t.avatar?.url" :src="t.avatar.url" :alt="t.name" class="w-full h-full object-cover" />
                 <div v-else class="w-full h-full bg-gradient-to-br from-primary/20 to-cyan/20"></div>
@@ -184,16 +185,30 @@
           </NuxtLink>
         </div>
 
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <div
-            v-for="sdg in page?.missionSdgSection?.featuredSdgs ?? []"
-            :key="sdg.goal"
-            class="aspect-square p-4 flex flex-col justify-between hover:-translate-y-1 transition-transform cursor-default"
-            :style="{ backgroundColor: SDG_COLORS[sdg.goal] ?? '#555' }"
-          >
-            <span class="font-bold text-xl text-white">{{ sdg.goal }}</span>
-            <span class="font-display font-bold text-sm uppercase leading-tight text-white">{{ SDG_NAMES[sdg.goal] }}</span>
+        <div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+            <a
+              v-for="sdg in page?.missionSdgSection?.featuredSdgs ?? []"
+              :key="sdg.goal"
+              :href="SDG_LINKS[sdg.goal]"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="aspect-square p-4 flex flex-col justify-between hover:-translate-y-1 hover:shadow-xl transition-all group"
+              :style="{ backgroundColor: SDG_COLORS[sdg.goal] ?? '#555' }"
+            >
+              <span class="font-bold text-xl text-white">{{ sdg.goal }}</span>
+              <span class="font-display font-bold text-sm uppercase leading-tight text-white">{{ SDG_NAMES[sdg.goal] }}</span>
+            </a>
           </div>
+          <a
+            href="https://www.un.org/sustainabledevelopment/sustainable-development-goals/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 border border-white/30 text-white text-sm font-bold uppercase tracking-widest px-6 py-3 rounded-xl hover:bg-white/10 transition-all"
+          >
+            View all 17 Goals
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </a>
         </div>
       </div>
     </section>
@@ -241,11 +256,30 @@ const SDG_COLORS: Record<number, string> = {
   16: '#00689D', 17: '#19486A',
 }
 const SDG_NAMES: Record<number, string> = {
-  1: 'No Poverty', 2: 'Zero Hunger', 3: 'Good Health', 4: 'Quality Education',
-  5: 'Gender Equality', 6: 'Clean Water', 7: 'Affordable Energy', 8: 'Decent Work',
-  9: 'Industry & Innovation', 10: 'Reduced Inequalities', 11: 'Sustainable Cities',
-  12: 'Responsible Consumption', 13: 'Climate Action', 14: 'Life Below Water',
-  15: 'Life on Land', 16: 'Peace & Justice', 17: 'Partnerships for Goals',
+  1: 'No Poverty', 2: 'Zero Hunger', 3: 'Good Health & Well-Being', 4: 'Quality Education',
+  5: 'Gender Equality', 6: 'Clean Water & Sanitation', 7: 'Affordable & Clean Energy', 8: 'Decent Work & Economic Growth',
+  9: 'Industry, Innovation & Infrastructure', 10: 'Reduced Inequalities', 11: 'Sustainable Cities & Communities',
+  12: 'Responsible Consumption & Production', 13: 'Climate Action', 14: 'Life Below Water',
+  15: 'Life on Land', 16: 'Peace, Justice & Strong Institutions', 17: 'Partnerships for the Goals',
+}
+const SDG_LINKS: Record<number, string> = {
+  1: 'https://www.un.org/sustainabledevelopment/poverty/',
+  2: 'https://www.un.org/sustainabledevelopment/hunger/',
+  3: 'https://www.un.org/sustainabledevelopment/health/',
+  4: 'https://www.un.org/sustainabledevelopment/education/',
+  5: 'https://www.un.org/sustainabledevelopment/gender-equality/',
+  6: 'https://www.un.org/sustainabledevelopment/water-and-sanitation/',
+  7: 'https://www.un.org/sustainabledevelopment/energy/',
+  8: 'https://www.un.org/sustainabledevelopment/economic-growth/',
+  9: 'https://www.un.org/sustainabledevelopment/infrastructure-industrialization/',
+  10: 'https://www.un.org/sustainabledevelopment/inequality/',
+  11: 'https://www.un.org/sustainabledevelopment/cities/',
+  12: 'https://www.un.org/sustainabledevelopment/sustainable-consumption-production/',
+  13: 'https://www.un.org/sustainabledevelopment/climate-change/',
+  14: 'https://www.un.org/sustainabledevelopment/oceans/',
+  15: 'https://www.un.org/sustainabledevelopment/biodiversity/',
+  16: 'https://www.un.org/sustainabledevelopment/peace-justice/',
+  17: 'https://www.un.org/sustainabledevelopment/globalpartnerships/',
 }
 
 type HomePageGlobal = {
@@ -299,7 +333,7 @@ const { data: testimonialsData } = useLazyAsyncData('testimonials', () =>
   $fetch<{ docs: Testimonial[] }>(`${apiBase}/api/homepage-testimonials?limit=3&depth=1&sort=order`),
 )
 
-const { previewData: page } = usePayloadLivePreview(pageData)
+const { previewData: page } = usePayloadLivePreview<HomePageGlobal>(pageData)
 
 const latestEvents = computed(() =>
   (homeData.value?.latestEvents ?? []).slice(0, page.value?.newsSection?.latestEventsCount ?? 4),

@@ -29,7 +29,7 @@ const { data: storiesData } = useLazyAsyncData('stories', () =>
   $fetch<{ docs: PayloadStory[] }>(`${apiBase}/api/stories?limit=50&depth=1&sort=-date`),
 )
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage)
+const { previewData: pageData } = usePayloadLivePreview<StoriesPageGlobal>(rawPage)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Field Stories — RuralNexus',

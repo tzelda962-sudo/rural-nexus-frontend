@@ -1,11 +1,11 @@
 import { ref, watch, onMounted, isRef } from 'vue'
 import type { Ref, MaybeRef } from 'vue'
 
-export function usePayloadLivePreview<T extends object>(source: MaybeRef<T | null>): {
+export function usePayloadLivePreview<T extends object>(source: MaybeRef<T | null | undefined>): {
   previewData: Ref<T | null>
   isPreview: Ref<boolean>
 } {
-  const previewData = ref(isRef(source) ? source.value : source) as Ref<T | null>
+  const previewData = ref((isRef(source) ? source.value : source) ?? null) as Ref<T | null>
   const isPreview = ref(false)
 
   // Keep previewData in sync with the source ref (handles navigation remounts
@@ -13,7 +13,7 @@ export function usePayloadLivePreview<T extends object>(source: MaybeRef<T | nul
   if (isRef(source)) {
     watch(source, (val) => {
       if (!isPreview.value) {
-        previewData.value = val
+        previewData.value = val ?? null
       }
     })
   }

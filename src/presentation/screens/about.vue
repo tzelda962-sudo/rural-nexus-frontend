@@ -179,7 +179,7 @@ const { data: rawPage } = useLazyAsyncData('about-page-global', () =>
   $fetch<AboutPageGlobal>(`${apiBase}/api/globals/about-page`),
 )
 
-const { previewData: pageData } = usePayloadLivePreview(rawPage)
+const { previewData: pageData } = usePayloadLivePreview<AboutPageGlobal>(rawPage)
 
 useHead({
   title: () => pageData.value?.seo?.metaTitle ?? 'Who We Are — RuralNexus',

@@ -103,7 +103,7 @@ function typeIcon(type: Partner['type']) {
     <section class="py-20 bg-surface-container-low">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Experts & Advisors</p>
-        <h2 class="text-3xl font-display font-bold mb-12">Advisory Board</h2>
+        <h2 class="text-3xl font-display font-bold mb-12">Collaborating Experts</h2>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           <div
@@ -127,6 +127,10 @@ function typeIcon(type: Partner['type']) {
             </div>
           </div>
         </div>
+
+        <p class="mt-10 text-sm text-on-surface-variant font-body leading-relaxed opacity-70 max-w-3xl">
+          Rural Nexus collaborates with a network of independent experts and associate consultants from diverse academic, technical, and professional backgrounds. These collaborations are project-based and support our interdisciplinary and action-oriented work across sustainability, rural development, and innovation systems.
+        </p>
       </div>
     </section>
 
@@ -160,6 +164,10 @@ function typeIcon(type: Partner['type']) {
             </div>
           </div>
         </div>
+
+        <p class="mb-10 text-xs text-on-surface-variant font-body leading-relaxed opacity-60 italic">
+          Affiliations listed are for identification purposes only and do not imply institutional endorsement or formal partnership with employers or affiliated organisations.
+        </p>
 
         <!-- Africa -->
         <div>

@@ -28,8 +28,8 @@ const maxScale = props.maxScale || 5;
 // Pan logic
 function startPan(e: MouseEvent | TouchEvent) {
   isDragging.value = true;
-  const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-  const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+  const clientX = "touches" in e ? e.touches[0]!.clientX : e.clientX;
+  const clientY = "touches" in e ? e.touches[0]!.clientY : e.clientY;
 
   startX.value = clientX - translateX.value;
   startY.value = clientY - translateY.value;
@@ -41,8 +41,8 @@ function startPan(e: MouseEvent | TouchEvent) {
 function doPan(e: MouseEvent | TouchEvent) {
   if (!isDragging.value) return;
 
-  const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-  const clientY = "touches" in e ? e.touches[0].clientY : e.clientY;
+  const clientX = "touches" in e ? e.touches[0]!.clientX : e.clientX;
+  const clientY = "touches" in e ? e.touches[0]!.clientY : e.clientY;
 
   translateX.value = clientX - startX.value;
   translateY.value = clientY - startY.value;
@@ -98,9 +98,9 @@ function handleTap(e: MouseEvent | TouchEvent) {
   const currentTime = new Date().getTime();
   const tapLength = currentTime - lastTapTime;
   const clientX =
-    "touches" in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+    "touches" in e ? e.touches[0]!.clientX : (e as MouseEvent).clientX;
   const clientY =
-    "touches" in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
+    "touches" in e ? e.touches[0]!.clientY : (e as MouseEvent).clientY;
 
   if (tapLength < 300 && tapLength > 0) {
     // Double tap detected
@@ -118,7 +118,7 @@ function fitToScreen() {
   if (!containerRef.value || !contentRef.value) return;
 
   const containerRect = containerRef.value.getBoundingClientRect();
-  const contentRect = contentRef.value.children[0].getBoundingClientRect();
+  const contentRect = contentRef.value.children[0]!.getBoundingClientRect();
 
   // Reset translation
   translateX.value = 0;

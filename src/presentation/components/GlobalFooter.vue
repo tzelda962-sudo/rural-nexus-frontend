@@ -58,7 +58,7 @@ const SOCIAL_ICONS: Record<string, string> = {
         <!-- Branding Col -->
         <div>
            <div class="flex items-center mb-4">
-            <img src="/dark-logo.png" alt="RuralNexus" class="h-10 w-auto" />
+            <img src="/dark-logo.png" alt="RuralNexus" class="h-32 w-auto" />
           </div>
           <p class="text-sm text-white/90 leading-relaxed font-body">
             {{ settings?.brand?.tagline ?? 'Empowering Rural Resilience. Action Research, Innovation, and Development for resilient food systems.' }}
