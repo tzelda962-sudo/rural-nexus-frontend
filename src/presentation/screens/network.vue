@@ -56,43 +56,26 @@ function typeIcon(type: Partner['type']) {
         <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Leadership</p>
         <h2 class="text-3xl font-display font-bold mb-12">Management Team</h2>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <!-- CEO -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div
-            v-for="member in ceo"
+            v-for="member in [...(ceo ?? []), ...(paManagers ?? [])]"
             :key="member.id"
-            class="col-span-full lg:col-span-2 p-8 bg-primary text-white rounded-[36px] flex items-start gap-6"
+            class="p-8 bg-primary text-white rounded-[36px] flex items-start gap-6"
           >
             <div class="w-16 h-16 hex-mask bg-white/20 flex-shrink-0 flex items-center justify-center text-white font-display font-bold text-2xl">
               {{ member.name.charAt(0) }}
             </div>
-            <div>
+            <div class="min-w-0">
               <p class="text-xs font-bold uppercase tracking-widest text-white/60 mb-1">{{ member.role }}</p>
               <p class="font-display font-bold text-xl mb-2">{{ member.name }}</p>
               <p v-if="member.bio" class="text-sm text-white/80 font-body leading-relaxed">{{ member.bio }}</p>
-            </div>
-          </div>
-
-          <!-- PA Managers -->
-          <div
-            v-for="member in paManagers"
-            :key="member.id"
-            class="p-6 bg-surface-container rounded-[28px] flex flex-col gap-3"
-          >
-            <div class="w-12 h-12 hex-mask bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
-              {{ member.name.charAt(0) }}
-            </div>
-            <div>
-              <p class="text-[10px] font-bold uppercase tracking-widest text-primary mb-1">{{ member.role }}</p>
-              <p class="font-display font-bold text-base">{{ member.name }}</p>
-              <p v-if="member.bio" class="text-xs text-on-surface-variant font-body leading-relaxed mt-1 opacity-70">{{ member.bio }}</p>
-            </div>
-            <div v-if="member.expertise?.length" class="flex flex-wrap gap-1 mt-auto">
-              <span
-                v-for="exp in member.expertise"
-                :key="exp.skill"
-                class="px-2 py-0.5 text-[10px] font-bold bg-primary/10 text-primary rounded-full"
-              >{{ exp.skill }}</span>
+              <div v-if="member.expertise?.length" class="flex flex-wrap gap-1.5 mt-3">
+                <span
+                  v-for="exp in member.expertise"
+                  :key="exp.skill"
+                  class="px-2 py-0.5 text-[10px] font-bold bg-white/20 text-white rounded-full"
+                >{{ exp.skill }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -198,28 +181,28 @@ function typeIcon(type: Partner['type']) {
 
     <!-- ── Geographic Intervention Map ────────────────────────────── -->
     <section class="py-20 bg-surface-container-low">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
         <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Where We Work</p>
         <h2 class="text-3xl font-display font-bold mb-4">Countries of Intervention</h2>
-        <p class="text-on-surface-variant font-body mb-10 max-w-2xl leading-relaxed">
+        <p class="text-on-surface-variant font-body max-w-2xl leading-relaxed">
           RuralNexus has active field operations and research programmes across
-          {{ interventionCountries?.length ?? 10 }} countries. Hover over a highlighted country to see active programmes, or click a region to zoom in.
+          {{ interventionCountries?.length ?? 10 }} countries. Click a continent to zoom in, then click a highlighted country for programme details.
         </p>
+      </div>
 
-        <div class="max-w-2xl mx-auto">
-          <WorldInterventionMap :countries="interventionCountries ?? []" />
-        </div>
+      <div class="px-4 sm:px-6 lg:px-8">
+        <WorldInterventionMap :countries="interventionCountries ?? []" />
+      </div>
 
-        <!-- Country chips -->
-        <div class="flex flex-wrap gap-2 justify-center mt-8">
-          <span
-            v-for="country in interventionCountries"
-            :key="country.isoCode"
-            class="px-4 py-1.5 text-xs font-bold bg-leaf/10 text-leaf rounded-full border border-leaf/20"
-          >
-            {{ country.name }}
-          </span>
-        </div>
+      <!-- Country chips -->
+      <div class="flex flex-wrap gap-2 justify-center mt-8 px-4 sm:px-6 lg:px-8">
+        <span
+          v-for="country in interventionCountries"
+          :key="country.isoCode"
+          class="px-4 py-1.5 text-xs font-bold bg-leaf/10 text-leaf rounded-full border border-leaf/20"
+        >
+          {{ country.name }}
+        </span>
       </div>
     </section>
 
