@@ -4,7 +4,7 @@
     <section class="relative min-h-[90vh] flex items-center justify-center bg-primary-container overflow-hidden">
       <div class="absolute inset-0 z-0 opacity-20">
         <img
-          :src="page?.hero?.backgroundImage?.url ?? 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=2560&q=80'"
+          :src="page?.hero?.backgroundImage?.url ?? 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1440&q=60'"
           alt="Agriculture Background"
           class="w-full h-full object-cover mix-blend-overlay"
         />
