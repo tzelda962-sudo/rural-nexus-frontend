@@ -62,14 +62,34 @@ function typeIcon(type: Partner['type']) {
             :key="member.id"
             class="p-8 bg-primary text-white rounded-[36px] flex items-start gap-6"
           >
-            <div class="w-16 h-16 hex-mask bg-white/20 flex-shrink-0 flex items-center justify-center text-white font-display font-bold text-2xl">
-              {{ member.name.charAt(0) }}
+            <!-- Avatar: photo if available, else initials -->
+            <div class="w-20 h-20 hex-mask flex-shrink-0 overflow-hidden">
+              <img
+                v-if="member.avatar?.url"
+                :src="member.avatar.url"
+                :alt="member.name"
+                class="w-full h-full object-cover"
+              />
+              <div
+                v-else
+                class="w-full h-full bg-white/20 flex items-center justify-center text-white font-display font-bold text-2xl"
+              >
+                {{ member.name.charAt(0) }}
+              </div>
             </div>
             <div class="min-w-0">
               <p class="text-xs font-bold uppercase tracking-widest text-white/60 mb-1">{{ member.role }}</p>
               <p class="font-display font-bold text-xl mb-2">{{ member.name }}</p>
-              <p v-if="member.bio" class="text-sm text-white/80 font-body leading-relaxed">{{ member.bio }}</p>
-              <div v-if="member.expertise?.length" class="flex flex-wrap gap-1.5 mt-3">
+              <p v-if="member.bio" class="text-sm text-white/80 font-body leading-relaxed mb-3">{{ member.bio }}</p>
+              <!-- Program areas -->
+              <div v-if="member.programAreas?.length" class="flex flex-wrap gap-1.5 mb-3">
+                <span
+                  v-for="pa in member.programAreas"
+                  :key="pa.id"
+                  class="px-2 py-0.5 text-[10px] font-bold bg-leaf/30 text-leaf-300 rounded-full"
+                >{{ pa.code }}: {{ pa.title }}</span>
+              </div>
+              <div v-if="member.expertise?.length" class="flex flex-wrap gap-1.5">
                 <span
                   v-for="exp in member.expertise"
                   :key="exp.skill"

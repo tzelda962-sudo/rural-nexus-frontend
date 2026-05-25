@@ -20,6 +20,7 @@ export type TeamMemberApi = {
   expertise?: { skill: string }[]
   avatar?: { url?: string } | null
   show?: boolean
+  programAreas?: { id: string; code: string; title: string; slug: string }[] | null
 }
 
 export type InterventionCountry = {

@@ -204,8 +204,18 @@ function staggerIndex(rowIdx: number, colIdx: number) {
         <!-- Desktop: Hexagonal Honeycomb -->
         <div class="hidden lg:block">
 
+          <!-- Interdependence indicator -->
+          <div class="flex items-center justify-center gap-3 mb-8">
+            <span class="h-px flex-1 bg-gradient-to-r from-transparent to-outline-variant/30"></span>
+            <div class="flex items-center gap-2 px-4 py-2 bg-surface-container-low border border-outline-variant/20 rounded-full">
+              <Globe class="w-3.5 h-3.5 text-primary opacity-60" />
+              <span class="text-[10px] font-bold uppercase tracking-[0.25em] text-on-surface-variant opacity-60">All program areas are interconnected — click to explore</span>
+            </div>
+            <span class="h-px flex-1 bg-gradient-to-l from-transparent to-outline-variant/30"></span>
+          </div>
+
           <!-- Hex grid rows -->
-          <div class="hex-grid">
+          <div class="hex-grid relative">
             <div
               v-for="(row, rowIdx) in programRows"
               :key="rowIdx"
@@ -284,26 +294,57 @@ function staggerIndex(rowIdx: number, colIdx: number) {
                 </div>
 
                 <!-- Right -->
-                <div v-if="activeProgram.initiatives?.length">
-                  <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant opacity-50 mb-6">Active Field Initiatives</p>
-                  <ul class="space-y-5">
-                    <li
-                      v-for="(init, i) in activeProgram.initiatives" :key="init.title"
-                      class="flex gap-4 items-start initiative-item"
-                      :style="{ '--init-delay': `${i * 0.08}s` }"
-                    >
-                      <div
-                        class="mt-0.5 flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-white"
-                        :style="{ backgroundColor: getColors(activeProgram.colorTheme).bg }"
+                <div>
+                  <!-- Key Activities -->
+                  <div v-if="activeProgram.keyActivities?.length" class="mb-8">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant opacity-50 mb-6">Key Activities</p>
+                    <ul class="space-y-3">
+                      <li
+                        v-for="(act, i) in activeProgram.keyActivities" :key="act"
+                        class="flex gap-3 items-start initiative-item"
+                        :style="{ '--init-delay': `${i * 0.06}s` }"
                       >
-                        <Check class="w-3.5 h-3.5" />
-                      </div>
-                      <div>
-                        <strong class="font-display text-sm text-on-surface block mb-1">{{ init.title }}</strong>
-                        <span class="text-xs text-on-surface-variant font-body opacity-70 leading-relaxed">{{ init.desc }}</span>
-                      </div>
-                    </li>
-                  </ul>
+                        <div
+                          class="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
+                          :style="{ backgroundColor: getColors(activeProgram.colorTheme).bg }"
+                        >{{ i + 1 }}</div>
+                        <span class="text-sm text-on-surface-variant font-body leading-relaxed">{{ act }}</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Active Field Initiatives -->
+                  <div v-if="activeProgram.initiatives?.length">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.3em] text-on-surface-variant opacity-50 mb-4">Active Field Initiatives</p>
+                    <ul class="space-y-4">
+                      <li
+                        v-for="(init, i) in activeProgram.initiatives" :key="init.title"
+                        class="flex gap-4 items-start initiative-item"
+                        :style="{ '--init-delay': `${(activeProgram.keyActivities?.length ?? 0) * 0.06 + i * 0.08}s` }"
+                      >
+                        <div
+                          class="mt-0.5 flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-white"
+                          :style="{ backgroundColor: getColors(activeProgram.colorTheme).bg }"
+                        >
+                          <Check class="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <strong class="font-display text-sm text-on-surface block mb-1">{{ init.title }}</strong>
+                          <span class="text-xs text-on-surface-variant font-body opacity-70 leading-relaxed">{{ init.desc }}</span>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Read more link -->
+                  <NuxtLink
+                    :to="`/programs/${activeProgram.slug}`"
+                    class="mt-8 inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-xl font-bold text-sm hover:shadow-lg hover:scale-105 transition-all"
+                    :style="{ backgroundColor: getColors(activeProgram.colorTheme).bg }"
+                  >
+                    Read more about this program
+                    <ArrowRight class="w-4 h-4" />
+                  </NuxtLink>
                 </div>
               </div>
             </div>
@@ -356,18 +397,18 @@ function staggerIndex(rowIdx: number, colIdx: number) {
 }
 
 .hex-row + .hex-row {
-  margin-top: -42px; /* vertical interlock ≈ hex-height / 4 */
+  margin-top: -52px; /* vertical interlock ≈ hex-height / 4 */
 }
 
 .hex-row-offset {
-  margin-left: 130px; /* hex-width/2 + gap/2 = 110 + 10 ≈ 120, +10 visual breathing room */
+  margin-left: 158px; /* hex-width/2 + gap/2 = 133 + 10 = 143, +15 visual breathing room */
 }
 
 /* ── Individual hex cell ───────────────────────────────────── */
 .hex-cell {
   position: relative;
-  width: 220px;
-  height: 190px; /* 220 × 0.866 */
+  width: 265px;
+  height: 230px; /* 265 × 0.866 */
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   background-color: var(--bg);
   cursor: pointer;

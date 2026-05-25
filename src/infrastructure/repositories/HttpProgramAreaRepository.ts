@@ -27,9 +27,11 @@ type PayloadProgram = {
   title: string
   slug: string
   description: string
+  shortDescription?: string
   color: string
   sdgs?: { goal: number }[]
   initiatives?: { title: string; description: string }[]
+  keyActivities?: { activity: string }[]
 }
 
 type PayloadList<T> = { docs: T[]; totalDocs: number }
@@ -41,6 +43,7 @@ function adapt(p: PayloadProgram): ProgramArea {
     slug: p.slug,
     title: p.title,
     description: p.description,
+    shortDescription: p.shortDescription,
     icon: '',
     colorTheme: p.color,
     sdgs: (p.sdgs ?? []).map(s => ({
@@ -52,6 +55,7 @@ function adapt(p: PayloadProgram): ProgramArea {
       title: i.title,
       desc: i.description,
     })),
+    keyActivities: (p.keyActivities ?? []).map(k => k.activity),
   }
 }
 
