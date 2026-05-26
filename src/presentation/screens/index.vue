@@ -214,32 +214,33 @@
       </div>
     </section>
 
-    <!-- Social channels -->
-    <section v-if="socialChannels.length > 0" class="py-16 bg-surface-container-lowest border-t border-b border-surface-variant">
+    <!-- Social channels — always shown; links activate when URLs are configured -->
+    <section class="py-16 bg-surface-container-lowest border-t border-b border-surface-variant">
       <div class="max-w-7xl mx-auto px-4 text-center">
         <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-10">
           Follow our work
         </p>
         <div class="flex flex-wrap justify-center gap-4">
-          <a
+          <component
+            :is="channel.url ? 'a' : 'div'"
             v-for="channel in socialChannels"
             :key="channel.platform"
-            :href="channel.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="group flex items-center gap-3 px-6 py-3.5 bg-surface-container rounded-2xl border border-outline-variant/20 hover:border-transparent hover:shadow-lg transition-all"
+            v-bind="channel.url ? { href: channel.url, target: '_blank', rel: 'noopener noreferrer' } : {}"
+            class="group flex items-center gap-3 px-6 py-3.5 bg-surface-container rounded-2xl border border-outline-variant/20 transition-all"
+            :class="channel.url ? 'hover:border-transparent hover:shadow-lg cursor-pointer' : 'opacity-60 cursor-default'"
           >
             <span
-              class="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-white transition-transform group-hover:scale-110"
+              class="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-white"
+              :class="channel.url ? 'transition-transform group-hover:scale-110' : ''"
               :style="{ backgroundColor: channel.meta.color }"
               v-html="channel.meta.icon"
             />
             <span class="flex flex-col text-left">
               <span class="text-sm font-bold text-on-surface leading-none mb-0.5">{{ channel.meta.label }}</span>
-              <span class="text-[11px] text-on-surface-variant opacity-70">{{ channel.meta.description }}</span>
+              <span class="text-[11px] text-on-surface-variant opacity-70">{{ channel.url ? channel.meta.description : 'Coming soon' }}</span>
             </span>
-            <svg class="ml-1 w-3.5 h-3.5 text-on-surface-variant opacity-40 group-hover:opacity-80 transition-opacity flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
-          </a>
+            <svg v-if="channel.url" class="ml-1 w-3.5 h-3.5 text-on-surface-variant opacity-40 group-hover:opacity-80 transition-opacity flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+          </component>
         </div>
       </div>
     </section>
@@ -330,20 +331,20 @@ type Testimonial = {
 type SiteSettings = { social?: { platform: string; url: string }[] }
 
 // Fetches run in parallel on SSR
-const { data: pageData } = useLazyAsyncData('home-page-global', () =>
+const { data: pageData } = useAsyncData('home-page-global', () =>
   $fetch<HomePageGlobal>(`${apiBase}/api/globals/home-page`),
 )
-const { data: homeData } = useLazyAsyncData('homeData', () =>
+const { data: homeData } = useAsyncData('homeData', () =>
   new GetHomeDataUseCase(
     new HttpProgramAreaRepository(apiBase),
     new HttpNewsEventRepository(apiBase),
     new MockTeamRepository(),
   ).execute(),
 )
-const { data: testimonialsData } = useLazyAsyncData('testimonials', () =>
+const { data: testimonialsData } = useAsyncData('testimonials', () =>
   $fetch<{ docs: Testimonial[] }>(`${apiBase}/api/homepage-testimonials?limit=3&depth=1&sort=order`),
 )
-const { data: siteSettings } = useLazyAsyncData('site-settings-home', () =>
+const { data: siteSettings } = useAsyncData('site-settings-home', () =>
   $fetch<SiteSettings>(`${apiBase}/api/globals/site-settings`),
 )
 
@@ -389,9 +390,16 @@ const CHANNEL_META: Record<string, { label: string; description: string; color: 
   },
 }
 
-const socialChannels = computed(() =>
-  (siteSettings.value?.social ?? [])
-    .map((s) => ({ ...s, meta: CHANNEL_META[s.platform] }))
-    .filter((s): s is typeof s & { meta: NonNullable<typeof s.meta> } => s.meta !== undefined),
-)
+const DEFAULT_PLATFORMS = ['linkedin', 'facebook', 'youtube']
+
+const socialChannels = computed(() => {
+  const configured = new Map(
+    (siteSettings.value?.social ?? []).map((s) => [s.platform, s.url]),
+  )
+  return DEFAULT_PLATFORMS.map((platform) => ({
+    platform,
+    url: configured.get(platform) ?? null,
+    meta: CHANNEL_META[platform],
+  })).filter((s) => s.meta !== undefined)
+})
 </script>

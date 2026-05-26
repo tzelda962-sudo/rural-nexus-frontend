@@ -22,10 +22,10 @@ type PayloadStory = {
   isFeatured: boolean; gradient?: string | null; image?: { url?: string } | null
 }
 
-const { data: rawPage } = useLazyAsyncData('stories-page-global', () =>
+const { data: rawPage } = useAsyncData('stories-page-global', () =>
   $fetch<StoriesPageGlobal>(`${apiBase}/api/globals/stories-page`),
 )
-const { data: storiesData } = useLazyAsyncData('stories', () =>
+const { data: storiesData } = useAsyncData('stories', () =>
   $fetch<{ docs: PayloadStory[] }>(`${apiBase}/api/stories?limit=50&depth=1&sort=-date`),
 )
 

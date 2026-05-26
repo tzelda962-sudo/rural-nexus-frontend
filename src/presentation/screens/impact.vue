@@ -26,10 +26,10 @@ type PayloadMetric = {
 const config = useRuntimeConfig()
 const apiBase = config.public.apiBase as string
 
-const { data: rawPage } = useLazyAsyncData('impact-page-global', () =>
+const { data: rawPage } = useAsyncData('impact-page-global', () =>
   $fetch<ImpactPageGlobal>(`${apiBase}/api/globals/impact-page`),
 )
-const { data: metricsData } = useLazyAsyncData('impact-metrics', () =>
+const { data: metricsData } = useAsyncData('impact-metrics', () =>
   $fetch<{ docs: PayloadMetric[] }>(`${apiBase}/api/impact-metrics?limit=50&depth=1&sort=order`),
 )
 

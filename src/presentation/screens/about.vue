@@ -243,11 +243,11 @@ const apiBase = config.public.apiBase as string
 const programRepo = new HttpProgramAreaRepository(apiBase)
 const partnersRepo = new HttpPartnersRepository(apiBase)
 
-const { data: rawPage } = useLazyAsyncData('about-page-global', () =>
+const { data: rawPage } = useAsyncData('about-page-global', () =>
   $fetch<AboutPageGlobal>(`${apiBase}/api/globals/about-page`),
 )
-const { data: programs } = useLazyAsyncData('about-programs', () => programRepo.getAll())
-const { data: interventionCountries } = useLazyAsyncData('about-intervention-countries', () =>
+const { data: programs } = useAsyncData('about-programs', () => programRepo.getAll())
+const { data: interventionCountries } = useAsyncData('about-intervention-countries', () =>
   partnersRepo.getInterventionCountries(),
 )
 

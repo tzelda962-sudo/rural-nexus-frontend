@@ -165,7 +165,7 @@ type ContactPageGlobal = {
 const config = useRuntimeConfig()
 const apiBase = config.public.apiBase as string
 
-const { data: rawPage } = useLazyAsyncData('contact-page-global', () =>
+const { data: rawPage } = useAsyncData('contact-page-global', () =>
   $fetch<ContactPageGlobal>(`${apiBase}/api/globals/contact-page?draft=true`),
 )
 

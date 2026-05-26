@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ArrowLeft, Check, MapPin } from 'lucide-vue-next'
+import { ArrowLeft, CheckCircle2, MapPin } from 'lucide-vue-next'
 import { lexicalToHtml } from '../../utils/lexicalToHtml'
 
 const route = useRoute()
@@ -23,6 +23,8 @@ const SDG_META: Record<number, { title: string; color: string }> = {
 type PayloadProgram = {
   id: string; code: string; title: string; slug: string; description: string; color: string
   heroImage?: { url?: string; alt?: string } | null
+  shortDescription?: string | null
+  keyActivities?: { activity: string }[] | null
   longDescription?: unknown; methodologySection?: unknown
   sdgs?: { goal: number }[]
   initiatives?: { title: string; description: string; location?: string | null; status?: string | null; stat?: string | null }[]
@@ -60,6 +62,7 @@ const COLOR_CLASS: Record<string, string> = {
 
 <template>
   <div v-if="program" class="bg-surface min-h-screen">
+
     <!-- Back nav -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
       <NuxtLink to="/programs" class="inline-flex items-center gap-2 text-sm font-bold text-primary uppercase tracking-widest hover:opacity-70 transition-opacity">
@@ -67,27 +70,27 @@ const COLOR_CLASS: Record<string, string> = {
       </NuxtLink>
     </div>
 
-    <!-- Hero -->
-    <header class="relative overflow-hidden bg-primary text-white py-24 mt-10">
+    <!-- Hero — code hexagon + title only -->
+    <header class="relative overflow-hidden bg-primary text-white py-20 mt-10">
       <div class="absolute inset-0 opacity-10 pointer-events-none">
         <div class="absolute -right-24 -top-24 w-96 h-96 hex-mask bg-white" />
       </div>
       <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div
-          class="inline-flex items-center justify-center w-20 h-20 hex-mask text-white font-display font-bold text-3xl mb-8 shadow-2xl"
-          :class="COLOR_CLASS[program.color] ?? 'bg-primary-container'"
-        >
-          {{ program.code }}
+        <div class="flex items-center gap-5 mb-6">
+          <div
+            class="inline-flex items-center justify-center w-20 h-20 hex-mask text-white font-display font-bold text-3xl flex-shrink-0 shadow-2xl"
+            :class="COLOR_CLASS[program.color] ?? 'bg-primary-container'"
+          >
+            {{ program.code }}
+          </div>
+          <p class="text-xs font-bold uppercase tracking-[0.3em] text-white/50">Program Area</p>
         </div>
-        <h1 class="font-display text-5xl md:text-6xl font-bold leading-tight mb-6 tracking-tight">
+        <h1 class="font-display text-5xl md:text-6xl font-bold leading-tight tracking-tight">
           {{ program.title }}
         </h1>
-        <p class="text-lg md:text-xl font-body text-white/80 leading-relaxed max-w-3xl">
-          {{ program.description }}
-        </p>
 
         <!-- SDGs -->
-        <div v-if="program.sdgs?.length" class="flex flex-wrap gap-2 mt-10">
+        <div v-if="program.sdgs?.length" class="flex flex-wrap gap-2 mt-8">
           <span
             v-for="s in program.sdgs"
             :key="s.goal"
@@ -103,22 +106,49 @@ const COLOR_CLASS: Record<string, string> = {
     <!-- Body -->
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-24 space-y-20">
 
-      <!-- Long description -->
+      <!-- Description (short overview) -->
+      <section v-if="program.description">
+        <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-4">Overview</p>
+        <p class="text-lg font-body text-on-surface-variant leading-relaxed">{{ program.description }}</p>
+      </section>
+
+      <!-- Short description (the detailed PA paragraph) -->
+      <section v-if="program.shortDescription">
+        <h2 class="font-display text-2xl font-bold text-on-surface mb-5">About This Program Area</h2>
+        <p class="font-body text-on-surface-variant leading-relaxed">{{ program.shortDescription }}</p>
+      </section>
+
+      <!-- Key Activities -->
+      <section v-if="program.keyActivities?.length">
+        <h2 class="font-display text-2xl font-bold text-on-surface mb-8">Key Activities</h2>
+        <ul class="space-y-3">
+          <li
+            v-for="(item, i) in program.keyActivities"
+            :key="i"
+            class="flex items-start gap-4 p-5 bg-surface-container rounded-2xl"
+          >
+            <CheckCircle2 class="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+            <span class="font-body text-on-surface-variant leading-relaxed">{{ item.activity }}</span>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Long description (rich text) -->
       <section v-if="longDescHtml">
-        <h2 class="font-display text-2xl font-bold text-on-surface mb-6">About This Program</h2>
+        <h2 class="font-display text-2xl font-bold text-on-surface mb-6">In Depth</h2>
         <div v-html="longDescHtml" class="prose-like font-body text-on-surface" />
       </section>
 
-      <!-- Methodology -->
+      <!-- Methodology (rich text) -->
       <section v-if="methodologyHtml">
         <h2 class="font-display text-2xl font-bold text-on-surface mb-6">Our Methodology</h2>
         <div v-html="methodologyHtml" class="prose-like font-body text-on-surface" />
       </section>
 
-      <!-- Initiatives -->
+      <!-- Field Initiatives -->
       <section v-if="program.initiatives?.length">
         <h2 class="font-display text-2xl font-bold text-on-surface mb-10">Field Initiatives</h2>
-        <div class="grid gap-8 md:grid-cols-2">
+        <div class="grid gap-6 md:grid-cols-2">
           <div
             v-for="init in program.initiatives"
             :key="init.title"
@@ -126,7 +156,7 @@ const COLOR_CLASS: Record<string, string> = {
           >
             <div class="flex items-start gap-4 mb-4">
               <div class="mt-1 w-6 h-6 flex-shrink-0 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                <Check class="w-3.5 h-3.5" />
+                <CheckCircle2 class="w-3.5 h-3.5" />
               </div>
               <h3 class="font-display font-bold text-lg text-on-surface">{{ init.title }}</h3>
             </div>
@@ -139,6 +169,7 @@ const COLOR_CLASS: Record<string, string> = {
           </div>
         </div>
       </section>
+
     </div>
   </div>
 </template>

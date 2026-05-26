@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useAsyncData } from '#imports'
 import { GetHomeDataUseCase } from '@application/use_cases/GetHomeDataUseCase'
 import { HttpProgramAreaRepository } from '@infrastructure/repositories/HttpProgramAreaRepository'
@@ -22,10 +22,10 @@ type ProgramsPageGlobal = {
 const config = useRuntimeConfig()
 const apiBase = config.public.apiBase as string
 
-const { data: rawPage } = useLazyAsyncData('programs-page-global', () =>
+const { data: rawPage } = useAsyncData('programs-page-global', () =>
   $fetch<ProgramsPageGlobal>(`${apiBase}/api/globals/programs-page`),
 )
-const { data: homeData } = useLazyAsyncData('programsPillars', () =>
+const { data: homeData } = useAsyncData('programsPillars', () =>
   new GetHomeDataUseCase(
     new HttpProgramAreaRepository(apiBase),
     new HttpNewsEventRepository(apiBase),
@@ -90,6 +90,13 @@ onMounted(() => {
   if (gridRef.value) observer.observe(gridRef.value)
 })
 onUnmounted(() => observer?.disconnect())
+
+// Fallback: if data arrives after the observer already fired (or never fired), show the grid
+watch(homeData, (val) => {
+  if (val?.programAreas?.length && !gridVisible.value) {
+    gridVisible.value = true
+  }
+}, { immediate: true })
 
 // Stagger index: flat index across all rows for animation delay
 function staggerIndex(rowIdx: number, colIdx: number) {
@@ -179,24 +186,42 @@ function staggerIndex(rowIdx: number, colIdx: number) {
             <!-- Mobile expand -->
             <div
               class="overflow-hidden transition-all duration-500"
-              :style="{ maxHeight: selected?.id === program.id ? '600px' : '0px' }"
+              :style="{ maxHeight: selected?.id === program.id ? '1000px' : '0px' }"
             >
-              <p class="text-sm text-on-surface-variant font-body leading-relaxed mb-4 opacity-80 pt-2">
-                {{ program.description }}
-              </p>
-              <div v-if="program.sdgs?.length" class="flex flex-wrap gap-1.5 mb-4">
-                <span
-                  v-for="sdg in program.sdgs" :key="sdg.code"
-                  class="px-2.5 py-1 text-[10px] font-bold text-white rounded-lg"
-                  :style="{ backgroundColor: sdg.color }"
-                >{{ sdg.code }}</span>
+              <div class="pt-3 pb-1 space-y-4">
+                <p class="text-sm text-on-surface-variant font-body leading-relaxed opacity-80">
+                  {{ program.shortDescription || program.description }}
+                </p>
+
+                <!-- Key Activities -->
+                <ul v-if="program.keyActivities?.length" class="space-y-2">
+                  <li v-for="(act, i) in program.keyActivities" :key="i" class="flex gap-2.5 items-start">
+                    <div
+                      class="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-bold"
+                      :style="{ backgroundColor: getColors(program.colorTheme).bg }"
+                    >{{ i + 1 }}</div>
+                    <span class="text-xs text-on-surface-variant font-body leading-relaxed opacity-80">{{ act }}</span>
+                  </li>
+                </ul>
+
+                <!-- SDG chips -->
+                <div v-if="program.sdgs?.length" class="flex flex-wrap gap-1.5">
+                  <span
+                    v-for="sdg in program.sdgs" :key="sdg.code"
+                    class="px-2.5 py-1 text-[10px] font-bold text-white rounded-lg"
+                    :style="{ backgroundColor: sdg.color }"
+                  >{{ sdg.code }}</span>
+                </div>
+
+                <!-- Read more -->
+                <NuxtLink
+                  :to="`/programs/${program.slug}`"
+                  class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-bold mt-1"
+                  :style="{ backgroundColor: getColors(program.colorTheme).bg }"
+                >
+                  Read more <ArrowRight class="w-4 h-4" />
+                </NuxtLink>
               </div>
-              <ul v-if="program.initiatives?.length" class="space-y-2">
-                <li v-for="init in program.initiatives" :key="init.title" class="flex gap-2 items-start">
-                  <Check class="w-3.5 h-3.5 mt-0.5 flex-shrink-0" :style="{ color: getColors(program.colorTheme).bg }" />
-                  <span class="text-xs text-on-surface-variant font-body opacity-80">{{ init.title }}</span>
-                </li>
-              </ul>
             </div>
           </button>
         </div>

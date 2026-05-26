@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { useRuntimeConfig, useLazyAsyncData } from '#imports'
+import { computed } from 'vue'
+import { useRuntimeConfig, useAsyncData } from '#imports'
 import {
   HttpPartnersRepository,
   type Partner,
@@ -14,12 +15,24 @@ useHead({ title: 'Our Network — RuralNexus' })
 const config = useRuntimeConfig()
 const repo = new HttpPartnersRepository(config.public.apiBase as string)
 
-const { data: ceo } = useLazyAsyncData('network-ceo', () => repo.getTeamByType('ceo'))
-const { data: paManagers } = useLazyAsyncData('network-pac', () => repo.getTeamByType('pa-manager'))
-const { data: advisoryBoard } = useLazyAsyncData('network-advisory', () => repo.getTeamByType('advisory'))
-const { data: europePartners } = useLazyAsyncData('partners-europe', () => repo.getByContinent('Europe'))
-const { data: africaPartners } = useLazyAsyncData('partners-africa', () => repo.getByContinent('Africa'))
-const { data: interventionCountries } = useLazyAsyncData('intervention-countries', () => repo.getInterventionCountries())
+// All 6 fetches in one parallel call — one round-trip instead of six
+const { data: networkData } = useAsyncData('network-all', () =>
+  Promise.all([
+    repo.getTeamByType('ceo'),
+    repo.getTeamByType('pa-manager'),
+    repo.getTeamByType('advisory'),
+    repo.getByContinent('Europe'),
+    repo.getByContinent('Africa'),
+    repo.getInterventionCountries(),
+  ])
+)
+
+const ceo = computed(() => networkData.value?.[0] ?? [])
+const paManagers = computed(() => networkData.value?.[1] ?? [])
+const advisoryBoard = computed(() => networkData.value?.[2] ?? [])
+const europePartners = computed(() => networkData.value?.[3] ?? [])
+const africaPartners = computed(() => networkData.value?.[4] ?? [])
+const interventionCountries = computed(() => networkData.value?.[5] ?? [])
 
 function typeIcon(type: Partner['type']) {
   const map: Record<string, typeof Globe> = {

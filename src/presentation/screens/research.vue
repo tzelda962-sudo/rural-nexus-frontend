@@ -52,10 +52,10 @@ type PayloadPub = {
   externalUrl?: string | null
 }
 
-const { data: rawPage } = useLazyAsyncData('research-page-global', () =>
+const { data: rawPage } = useAsyncData('research-page-global', () =>
   $fetch<ResearchPageGlobal>(`${apiBase}/api/globals/research-page`),
 )
-const { data: allResources } = useLazyAsyncData('researchData', () =>
+const { data: allResources } = useAsyncData('researchData', () =>
   $fetch<{ docs: PayloadPub[] }>(`${apiBase}/api/publications?limit=200&sort=-publishedDate&depth=1`),
 )
 

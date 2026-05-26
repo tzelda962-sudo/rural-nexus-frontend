@@ -35,10 +35,10 @@ type PayloadGalleryItem = {
   image?: { url?: string } | null; caption?: string | null
 }
 
-const { data: rawPage } = useLazyAsyncData('gallery-page-global', () =>
+const { data: rawPage } = useAsyncData('gallery-page-global', () =>
   $fetch<GalleryPageGlobal>(`${apiBase}/api/globals/gallery-page`),
 )
-const { data: galleryData } = useLazyAsyncData('gallery', () =>
+const { data: galleryData } = useAsyncData('gallery', () =>
   $fetch<{ docs: PayloadGalleryItem[] }>(`${apiBase}/api/gallery?limit=100`),
 )
 

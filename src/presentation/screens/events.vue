@@ -41,7 +41,7 @@ type EventsPageGlobal = {
 const config = useRuntimeConfig();
 const apiBase = config.public.apiBase as string;
 
-const { data: rawPage } = useLazyAsyncData('events-page-global', () =>
+const { data: rawPage } = useAsyncData('events-page-global', () =>
   $fetch<EventsPageGlobal>(`${apiBase}/api/globals/events-page`),
 )
 
@@ -115,7 +115,7 @@ type Initiative = {
     color: string;
   };
 };
-const { data: initiativesData } = useLazyAsyncData("hub-initiatives", () =>
+const { data: initiativesData } = useAsyncData("hub-initiatives", () =>
   $fetch<{ docs: Initiative[] }>(`${apiBase}/api/initiatives?showcase=true`),
 );
 
@@ -143,7 +143,7 @@ type PayloadPub = {
   summary: string;
   pdf?: { url?: string } | null;
 };
-const { data: pubsData } = useLazyAsyncData("hub-publications", () =>
+const { data: pubsData } = useAsyncData("hub-publications", () =>
   $fetch<{ docs: PayloadPub[] }>(
     `${apiBase}/api/publications?limit=50&sort=-publishedDate&depth=1`,
   ),
@@ -171,7 +171,7 @@ type PayloadNewsEvent = {
   summary: string;
   image?: { url?: string } | null;
 };
-const { data: newsData } = useLazyAsyncData("hub-news", () =>
+const { data: newsData } = useAsyncData("hub-news", () =>
   $fetch<{ docs: PayloadNewsEvent[] }>(
     `${apiBase}/api/news-events?limit=20&sort=-date&depth=1`,
   ),
