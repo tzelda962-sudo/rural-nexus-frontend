@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useAsyncData } from '#imports'
 import { GetHomeDataUseCase } from '@application/use_cases/GetHomeDataUseCase'
 import { HttpProgramAreaRepository } from '@infrastructure/repositories/HttpProgramAreaRepository'
@@ -77,26 +77,13 @@ function toggleProgram(p: ProgramArea) {
 }
 function closePanel() { selected.value = null }
 
-// Intersection Observer for entrance animation
+// Show grid after mount — data is SSR-available so no need to gate on intersection
 const gridRef = ref<HTMLElement | null>(null)
 const gridVisible = ref(false)
-let observer: IntersectionObserver | null = null
 
 onMounted(() => {
-  observer = new IntersectionObserver(
-    (entries) => { if (entries[0]?.isIntersecting) { gridVisible.value = true; observer?.disconnect() } },
-    { threshold: 0.08 },
-  )
-  if (gridRef.value) observer.observe(gridRef.value)
+  gridVisible.value = true
 })
-onUnmounted(() => observer?.disconnect())
-
-// Fallback: if data arrives after the observer already fired (or never fired), show the grid
-watch(homeData, (val) => {
-  if (val?.programAreas?.length && !gridVisible.value) {
-    gridVisible.value = true
-  }
-}, { immediate: true })
 
 // Stagger index: flat index across all rows for animation delay
 function staggerIndex(rowIdx: number, colIdx: number) {
