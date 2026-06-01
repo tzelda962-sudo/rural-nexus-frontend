@@ -366,7 +366,7 @@ const highlights = computed(() =>
 
 // Combined feed of news-events + publications, sorted newest-first, capped at 6
 const combinedFeed = computed(() => {
-  const news = (homeData.value?.latestEvents ?? []).map(e => ({
+  const news = (homeData.value?.latestEvents ?? []).filter(e => e.date).map(e => ({
     id: e.id,
     title: e.title,
     summary: e.summary,
@@ -374,10 +374,10 @@ const combinedFeed = computed(() => {
     _isoDate: e.date.split('.').reverse().join('-'), // DD.MM.YYYY → YYYY-MM-DD for sorting
     to: `/news/${e.slug}`,
   }))
-  const pubs = (latestPubsData.value?.docs ?? []).map(p => ({
+  const pubs = (latestPubsData.value?.docs ?? []).filter(p => p.publishedDate).map(p => ({
     id: p.id,
     title: p.title,
-    summary: p.summary,
+    summary: p.summary ?? '',
     date: isoToDisplayDate(p.publishedDate),
     _isoDate: p.publishedDate,
     to: `/publications/${p.slug}`,

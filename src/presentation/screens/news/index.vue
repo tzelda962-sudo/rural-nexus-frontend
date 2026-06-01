@@ -5,7 +5,20 @@ import { ArrowRight, Calendar, ExternalLink } from 'lucide-vue-next'
 const config = useRuntimeConfig()
 const apiBase = config.public.apiBase as string
 
-useHead({ title: 'News & Events — RuralNexus' })
+type NewsPageGlobal = {
+  header?: { eyebrow?: string; heading?: string; body?: string }
+  ctaSection?: { heading?: string; body?: string; ctaLabel?: string; ctaPath?: string }
+  seo?: { metaTitle?: string; metaDescription?: string; ogImage?: { url?: string } | null }
+}
+
+const { data: pageData } = useAsyncData('news-page-global', () =>
+  $fetch<NewsPageGlobal>(`${apiBase}/api/globals/news-page`).catch(() => ({} as NewsPageGlobal)),
+)
+
+useHead({
+  title: () => pageData.value?.seo?.metaTitle ?? 'News & Events — RuralNexus',
+  meta: [{ name: 'description', content: () => pageData.value?.seo?.metaDescription ?? '' }],
+})
 
 type PayloadNewsEvent = {
   id: string; title: string; slug: string; date: string; category: string; summary: string
@@ -55,12 +68,12 @@ const typeColors: Record<string, string> = {
       </div>
       <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="max-w-3xl">
-          <p class="text-xs font-bold uppercase tracking-[0.3em] text-leaf-300 mb-6">Field Updates</p>
+          <p class="text-xs font-bold uppercase tracking-[0.3em] text-leaf-300 mb-6">{{ pageData?.header?.eyebrow ?? 'Field Updates' }}</p>
           <h1 class="font-display text-5xl md:text-6xl font-bold leading-tight mb-8">
-            News & <span class="text-leaf-300 italic">Events</span>
+            <span class="text-leaf-300 italic">{{ pageData?.header?.heading ?? 'News & Events' }}</span>
           </h1>
           <p class="font-body text-lg md:text-xl text-white/80 leading-relaxed balance">
-            Latest field reports, workshops, publications, funding announcements, and policy updates from RuralNexus.
+            {{ pageData?.header?.body ?? 'Latest field reports, workshops, publications, funding announcements, and policy updates from RuralNexus.' }}
           </p>
         </div>
       </div>
@@ -111,12 +124,12 @@ const typeColors: Record<string, string> = {
     <!-- CTA -->
     <section class="bg-surface-container-low py-24">
       <div class="max-w-4xl mx-auto px-4 text-center">
-        <h2 class="font-display text-3xl font-bold mb-6 tracking-tight">Catalysing Change Through Collaboration</h2>
+        <h2 class="font-display text-3xl font-bold mb-6 tracking-tight">{{ pageData?.ctaSection?.heading ?? 'Catalysing Change Through Collaboration' }}</h2>
         <p class="text-lg text-on-surface-variant font-body opacity-70 mb-10 leading-relaxed">
-          We welcome proposals for co-hosting events, contributing to research publications, or partnering on field implementation projects.
+          {{ pageData?.ctaSection?.body ?? 'We welcome proposals for co-hosting events, contributing to research publications, or partnering on field implementation projects.' }}
         </p>
-        <NuxtLink to="/contact" class="inline-flex items-center gap-3 px-10 py-5 bg-white text-primary rounded-[22px] font-bold shadow-xl hover:shadow-2xl transition-all">
-          Initiate Contact <ExternalLink class="w-4 h-4" />
+        <NuxtLink :to="pageData?.ctaSection?.ctaPath ?? '/contact'" class="inline-flex items-center gap-3 px-10 py-5 bg-white text-primary rounded-[22px] font-bold shadow-xl hover:shadow-2xl transition-all">
+          {{ pageData?.ctaSection?.ctaLabel ?? 'Initiate Contact' }} <ExternalLink class="w-4 h-4" />
         </NuxtLink>
       </div>
     </section>
