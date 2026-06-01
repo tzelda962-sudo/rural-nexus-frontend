@@ -373,7 +373,7 @@ function staggerIndex(rowIdx: number, colIdx: number) {
           Join the RuralNexus Network
         </h2>
         <p class="text-lg text-on-surface-variant font-body mb-12 max-w-2xl mx-auto opacity-80 leading-relaxed">
-          Our programs scale through collaborative intelligence. We are seeking academic partners, field organizations, and technology hub collaborators.
+          Join the RuralNexus network to connect research, practice, and innovation for greater impact on rural challenges. We welcome collaboration with academic partners, field organizations, and innovation hubs 
         </p>
         <div class="flex flex-wrap justify-center gap-6">
           <NuxtLink to="/contact" class="px-10 py-5 bg-primary text-white rounded-[22px] font-bold hover:shadow-2xl hover:shadow-primary/30 transition-all">
@@ -404,23 +404,23 @@ function staggerIndex(rowIdx: number, colIdx: number) {
 
 .hex-row {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   position: relative;
 }
 
 .hex-row + .hex-row {
-  margin-top: -52px; /* vertical interlock ≈ hex-height / 4 */
+  margin-top: -63px; /* vertical interlock ≈ hex-height / 4 */
 }
 
 .hex-row-offset {
-  margin-left: 158px; /* hex-width/2 + gap/2 = 133 + 10 = 143, +15 visual breathing room */
+  margin-left: 190px; /* hex-width/2 + gap/2 = 160 + 12 = 172, +18 visual breathing room */
 }
 
 /* ── Individual hex cell ───────────────────────────────────── */
 .hex-cell {
   position: relative;
-  width: 265px;
-  height: 230px; /* 265 × 0.866 */
+  width: 320px;
+  height: 277px; /* 320 × 0.866 */
   clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
   background-color: var(--bg);
   cursor: pointer;
@@ -487,7 +487,7 @@ function staggerIndex(rowIdx: number, colIdx: number) {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 24px 32px;
+  padding: 28px 36px;
 }
 
 .hex-code-label {

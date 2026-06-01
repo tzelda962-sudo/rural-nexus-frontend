@@ -46,8 +46,8 @@ const contentHtml = computed(() => lexicalToHtml(article.value?.content))
   <div v-if="article" class="bg-surface min-h-screen">
     <!-- Back nav -->
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
-      <NuxtLink to="/events" class="inline-flex items-center gap-2 text-sm font-bold text-primary uppercase tracking-widest hover:opacity-70 transition-opacity">
-        <ArrowLeft class="w-4 h-4" /> Back to Action Hub
+      <NuxtLink to="/news" class="inline-flex items-center gap-2 text-sm font-bold text-primary uppercase tracking-widest hover:opacity-70 transition-opacity">
+        <ArrowLeft class="w-4 h-4" /> News &amp; Events
       </NuxtLink>
     </div>
 

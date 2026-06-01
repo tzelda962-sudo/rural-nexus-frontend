@@ -53,20 +53,19 @@ function typeIcon(type: Partner['type']) {
       <div class="absolute top-0 right-0 w-1/3 h-full hex-mask bg-primary opacity-5 -mr-24"></div>
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <p class="text-sm font-bold uppercase tracking-widest text-primary mb-4">Our Network</p>
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-6 leading-tight tracking-tight">
+        <!-- <h1 class="text-4xl md:text-5xl lg:text-6xl font-display font-bold mb-6 leading-tight tracking-tight">
           A Global Web of<br/>
           <span class="text-transparent bg-clip-text bg-gradient-to-r from-leaf to-cyan italic">Research & Expertise</span>
-        </h1>
+        </h1> -->
         <p class="text-lg text-on-surface-variant max-w-3xl font-body leading-relaxed">
-          RuralNexus operates through a decentralized network of management, consulting experts, and partner institutions across Europe and Africa, united by a shared commitment to inter-transdisciplinary rural development.
-        </p>
+          RuralNexus is a transdisciplinary research network connecting universities, research institutes, communities, practitioners, and policy actors across Europe and Africa to co-create innovative solutions for sustainable, resilient, and inclusive rural futures. </p>
       </div>
     </section>
 
     <!-- ── Management Team ─────────────────────────────────────────── -->
     <section class="py-20 bg-surface">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Leadership</p>
+        <!-- <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Leadership</p> -->
         <h2 class="text-3xl font-display font-bold mb-12">Management Team</h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -118,7 +117,7 @@ function typeIcon(type: Partner['type']) {
     <!-- ── Advisory Board ──────────────────────────────────────────── -->
     <section class="py-20 bg-surface-container-low">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Experts & Advisors</p>
+        <!-- <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Experts & Advisors</p> -->
         <h2 class="text-3xl font-display font-bold mb-12">Collaborating Experts</h2>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">

@@ -1,5 +1,6 @@
 export interface NewsEvent {
   id: string;
+  slug: string;
   title: string;
   date: string; // e.g., '21.01.2026'
   summary: string;

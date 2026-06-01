@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import {
   Menu, X, Search, ChevronRight, ChevronDown,
-  Layers, Rocket, Info, BarChart3, MessageSquareQuote, BookOpen, Share2
+  Layers, Sprout, FileText, Calendar, Info, BarChart3, MessageSquareQuote, BookOpen, Share2
 } from 'lucide-vue-next';
 
 const router = useRouter()
@@ -27,9 +27,11 @@ const navLinks = [
     name: 'What We Do',
     path: '#',
     children: [
-      { name: 'Our Programs', path: '/programs', desc: 'Core strategic pillars', icon: Layers },
-      { name: 'Action Hub', path: '/events', desc: 'Projects & Publications', icon: Rocket },
-      { name: 'Research & Tools', path: '/research', desc: 'Methodological resources', icon: BookOpen },
+      { name: 'Our Programs',    path: '/programs',     desc: 'Core strategic pillars',           icon: Layers   },
+      { name: 'Active Projects', path: '/projects',     desc: 'Field initiatives & active work',  icon: Sprout   },
+      { name: 'Publications',    path: '/publications', desc: 'Reports, papers & policy briefs',  icon: FileText },
+      { name: 'News & Events',   path: '/news',         desc: 'Updates from the field',           icon: Calendar },
+      { name: 'Research & Tools', path: '/research',   desc: 'Methodological resources',          icon: BookOpen },
     ],
   },
   { name: 'Gallery', path: '/gallery' },

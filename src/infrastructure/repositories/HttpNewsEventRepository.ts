@@ -24,6 +24,7 @@ function toDisplayDate(iso: string): string {
 function adapt(item: PayloadNewsEvent): NewsEvent {
   return {
     id: item.id,
+    slug: item.slug,
     title: item.title,
     date: toDisplayDate(item.date),
     summary: item.summary,

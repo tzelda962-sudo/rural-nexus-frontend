@@ -131,7 +131,7 @@
         </div>
 
         <!-- Regions list + stats -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+        <!-- <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
           <div class="space-y-4">
             <div
               v-for="region in (pageData?.geographySection?.regions ?? defaultRegions)"
@@ -163,7 +163,7 @@
               <p class="text-sm font-bold text-on-surface-variant/60 uppercase tracking-widest">Years Active</p>
             </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </section>
 

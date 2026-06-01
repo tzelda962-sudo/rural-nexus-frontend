@@ -139,9 +139,10 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
           <div class="lg:col-span-7 flex flex-col gap-4">
             <NewsCard
-              v-for="event in latestEvents"
-              :key="event.id"
-              :event="event"
+              v-for="item in combinedFeed"
+              :key="item.id"
+              :event="(item as any)"
+              :to="item.to"
             />
           </div>
           <div class="lg:col-span-5 flex flex-col gap-6">
@@ -156,7 +157,7 @@
               </span>
               <h3 class="font-display font-bold text-2xl mb-4 leading-snug">{{ highlight.title }}</h3>
               <p class="opacity-80 font-body text-sm leading-relaxed mb-6">{{ highlight.summary }}</p>
-              <NuxtLink :to="`/news/${(highlight as any).slug ?? highlight.id}`" class="text-xs font-bold uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
+              <NuxtLink :to="`/news/${highlight.slug}`" class="text-xs font-bold uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
                 Read Article <span>&rarr;</span>
               </NuxtLink>
             </div>
@@ -329,6 +330,8 @@ type Testimonial = {
 
 type SiteSettings = { social?: { platform: string; url: string }[] }
 
+type HomePub = { id: string; title: string; slug: string; summary: string; publishedDate: string; category?: string }
+
 // Fetches run in parallel on SSR
 const { data: pageData } = useAsyncData('home-page-global', () =>
   $fetch<HomePageGlobal>(`${apiBase}/api/globals/home-page`),
@@ -346,15 +349,43 @@ const { data: testimonialsData } = useAsyncData('testimonials', () =>
 const { data: siteSettings } = useAsyncData('site-settings-home', () =>
   $fetch<SiteSettings>(`${apiBase}/api/globals/site-settings`),
 )
+const { data: latestPubsData } = useAsyncData('home-latest-pubs', () =>
+  $fetch<{ docs: HomePub[] }>(`${apiBase}/api/publications?limit=3&sort=-publishedDate&depth=1`),
+)
 
 const { previewData: page } = usePayloadLivePreview<HomePageGlobal>(pageData)
 
-const latestEvents = computed(() =>
-  (homeData.value?.latestEvents ?? []).slice(0, page.value?.newsSection?.latestEventsCount ?? 4),
-)
+function isoToDisplayDate(iso: string): string {
+  const d = new Date(iso)
+  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+}
+
 const highlights = computed(() =>
   (homeData.value?.highlightEvents ?? []).slice(0, page.value?.newsSection?.highlightsCount ?? 3),
 )
+
+// Combined feed of news-events + publications, sorted newest-first, capped at 6
+const combinedFeed = computed(() => {
+  const news = (homeData.value?.latestEvents ?? []).map(e => ({
+    id: e.id,
+    title: e.title,
+    summary: e.summary,
+    date: e.date,
+    _isoDate: e.date.split('.').reverse().join('-'), // DD.MM.YYYY → YYYY-MM-DD for sorting
+    to: `/news/${e.slug}`,
+  }))
+  const pubs = (latestPubsData.value?.docs ?? []).map(p => ({
+    id: p.id,
+    title: p.title,
+    summary: p.summary,
+    date: isoToDisplayDate(p.publishedDate),
+    _isoDate: p.publishedDate,
+    to: `/publications/${p.slug}`,
+  }))
+  return [...news, ...pubs]
+    .sort((a, b) => b._isoDate.localeCompare(a._isoDate))
+    .slice(0, page.value?.newsSection?.latestEventsCount ?? 6)
+})
 
 const CHANNEL_META: Record<string, { label: string; description: string; color: string; icon: string }> = {
   linkedin: {

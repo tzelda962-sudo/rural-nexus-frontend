@@ -1,5 +1,8 @@
 <template>
-  <div class="p-5 bg-surface-container-low rounded-lg transition-transform hover:-translate-y-1 hover:bg-surface-container-highest flex gap-4 items-start">
+  <NuxtLink
+    :to="to ?? '#'"
+    class="p-5 bg-surface-container-low rounded-lg transition-transform hover:-translate-y-1 hover:bg-surface-container-highest flex gap-4 items-start"
+  >
     <div class="flex-shrink-0 w-16 h-16 bg-surface-variant rounded flex flex-col items-center justify-center text-primary-container">
       <span class="text-xs font-bold uppercase">{{ month }}</span>
       <span class="text-xl font-display font-bold">{{ day }}</span>
@@ -12,7 +15,7 @@
         {{ event.summary }}
       </p>
     </div>
-  </div>
+  </NuxtLink>
 </template>
 
 <script setup lang="ts">
@@ -21,10 +24,10 @@ import type { NewsEvent } from '@domain/repositories/INewsEventRepository';
 
 const props = defineProps<{
   event: NewsEvent;
+  to?: string;
 }>();
 
 const dateParts = computed(() => {
-  // Mock '21.01.2026' => { day: 21, month: Jan }
   const parts = props.event.date.split('.');
   if (parts.length === 3) {
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
