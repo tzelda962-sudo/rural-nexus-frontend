@@ -136,7 +136,7 @@
         <!-- Header row -->
         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
           <div>
-            <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-3">Knowledge & Updates</p>
+            <!-- <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-3">Knowledge & Updates</p> -->
             <h2 class="font-display font-bold text-4xl tracking-tight">
               {{ page?.newsSection?.heading ?? 'Latest Insights' }}
             </h2>
