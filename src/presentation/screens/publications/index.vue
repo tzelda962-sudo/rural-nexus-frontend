@@ -22,7 +22,7 @@ useHead({
 
 type PayloadPub = {
   id: string; title: string; slug: string
-  author?: string | null; category: string; publishedDate: string; summary: string
+  author?: string | null; category: string; publishedDate?: string | null; summary: string
   publicationType: 'internal' | 'external'
   externalUrl?: string | null
   pdf?: { url?: string } | null
@@ -35,7 +35,7 @@ const { data: pubsData } = await useAsyncData('publications-listing', () =>
 )
 
 function pubDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
 }
 
 const publications = computed(() =>
@@ -43,11 +43,11 @@ const publications = computed(() =>
     id: p.id,
     slug: p.slug,
     title: p.title,
-    author: p.author ?? '',
+    author: p.author || null,
     category: p.category,
-    date: pubDate(p.publishedDate),
+    date: p.publishedDate ? pubDate(p.publishedDate) : null,
     summary: p.summary,
-    pdfUrl: (p.pdf as { url?: string } | null)?.url,
+    pdfUrl: (p.pdf as { url?: string } | null)?.url ?? null,
     publicationType: p.publicationType,
     externalUrl: p.externalUrl ?? null,
   })),
@@ -75,56 +75,67 @@ const publications = computed(() =>
       </div>
     </section>
 
-    <!-- Publications List -->
-    <main class="flex-grow py-24">
+    <!-- Publications Grid -->
+    <main class="flex-grow py-20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 gap-6">
-          <div
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <article
             v-for="pub in publications"
             :key="pub.id"
-            class="p-8 bg-surface-container-lowest rounded-[32px] border border-outline-variant/10 hover:border-primary/30 transition-all flex flex-col md:flex-row items-center justify-between gap-8 group"
+            class="group bg-surface-container-lowest rounded-[28px] border border-outline-variant/10 hover:border-primary/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden"
           >
-            <div class="flex items-center gap-8">
-              <div class="w-16 h-16 rounded-2xl bg-surface-container-low flex items-center justify-center text-on-surface-variant/40 group-hover:text-primary group-hover:bg-primary/5 transition-all">
-                <FileText class="w-8 h-8" />
-              </div>
-              <div>
-                <span class="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-2 block">{{ pub.category }}</span>
-                <h3 class="text-xl font-display font-bold text-on-surface mb-2 tracking-tight">{{ pub.title }}</h3>
-                <p class="text-sm text-on-surface-variant font-body opacity-70 mb-1 leading-relaxed">{{ pub.summary }}</p>
-                <p class="text-xs font-bold text-on-surface-variant/50 uppercase tracking-widest">{{ pub.author }} • {{ pub.date }}</p>
-              </div>
+            <!-- Category + date -->
+            <div class="px-6 pt-6 flex items-start justify-between gap-3 mb-4">
+              <span class="text-[9px] font-bold text-primary uppercase tracking-[0.18em] px-3 py-1 bg-primary/5 rounded-full whitespace-nowrap">
+                {{ pub.category }}
+              </span>
+              <span v-if="pub.date" class="text-[10px] text-on-surface-variant/50 font-bold whitespace-nowrap">
+                {{ pub.date }}
+              </span>
             </div>
-            <div class="flex-shrink-0 flex flex-col gap-2">
+
+            <!-- Body -->
+            <div class="px-6 flex flex-col flex-grow">
+              <h3 class="font-display font-bold text-base text-on-surface mb-3 leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                {{ pub.title }}
+              </h3>
+              <p v-if="pub.summary" class="text-sm text-on-surface-variant/70 font-body leading-relaxed line-clamp-3 flex-grow">
+                {{ pub.summary }}
+              </p>
+              <p v-if="pub.author" class="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest mt-3">
+                {{ pub.author }}
+              </p>
+            </div>
+
+            <!-- Actions -->
+            <div class="px-6 pb-6 pt-4 mt-4 border-t border-outline-variant/10 flex flex-wrap gap-2">
               <a
                 v-if="pub.pdfUrl"
                 :href="pub.pdfUrl"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="flex items-center gap-3 px-6 py-3 bg-primary text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-primary-container transition-all"
+                class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-primary/90 transition-all"
               >
-                <Download class="w-4 h-4" /> Download PDF
+                <Download class="w-3.5 h-3.5" /> PDF
               </a>
-              <!-- External publication -->
               <a
                 v-if="pub.publicationType === 'external' && pub.externalUrl"
                 :href="pub.externalUrl"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="flex items-center gap-3 px-6 py-3 bg-surface-container-highest text-on-surface rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-white transition-all"
+                class="flex items-center gap-2 px-4 py-2 bg-surface-container text-on-surface rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all"
               >
-                <ExternalLink class="w-4 h-4" /> View Publication
+                <ExternalLink class="w-3.5 h-3.5" /> View
               </a>
-              <!-- Internal publication -->
               <NuxtLink
                 v-else
                 :to="`/publications/${pub.slug}`"
-                class="flex items-center gap-3 px-6 py-3 bg-surface-container-highest text-on-surface rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-primary hover:text-white transition-all"
+                class="flex items-center gap-2 px-4 py-2 bg-surface-container text-on-surface rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all"
               >
-                Read Abstract
+                <FileText class="w-3.5 h-3.5" /> Abstract
               </NuxtLink>
             </div>
-          </div>
+          </article>
         </div>
       </div>
     </main>
