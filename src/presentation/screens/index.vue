@@ -127,45 +127,100 @@
       </div>
     </section>
 
-    <!-- News & Highlights -->
+    <!-- Latest Insights -->
     <section class="py-24 bg-surface relative overflow-hidden">
       <div class="absolute -left-32 top-0 w-[500px] h-[500px] hex-mask bg-surface-container-highest opacity-50 pointer-events-none"></div>
 
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <h2 class="font-display font-bold text-4xl mb-12 tracking-tight">
-          {{ page?.newsSection?.heading ?? 'Latest Insights & Reports' }}
-        </h2>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          <div class="lg:col-span-7 flex flex-col gap-4">
-            <NewsCard
-              v-for="item in combinedFeed"
-              :key="item.id"
-              :event="(item as any)"
-              :to="item.to"
-            />
+        <!-- Header row -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-10">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-3">Knowledge & Updates</p>
+            <h2 class="font-display font-bold text-4xl tracking-tight">
+              {{ page?.newsSection?.heading ?? 'Latest Insights' }}
+            </h2>
           </div>
-          <div class="lg:col-span-5 flex flex-col gap-6">
-            <div
-              v-for="highlight in highlights"
-              :key="highlight.id"
-              class="p-10 rounded-[40px] bg-gradient-to-br from-primary-container to-primary text-white shadow-2xl relative overflow-hidden group"
+          <!-- Filter tabs -->
+          <div class="flex gap-2 flex-wrap">
+            <button
+              v-for="tab in insightFilters"
+              :key="tab.id"
+              @click="activeFilter = tab.id"
+              class="px-5 py-2 rounded-full text-xs font-bold uppercase tracking-widest transition-all"
+              :class="activeFilter === tab.id
+                ? 'bg-primary text-white shadow-md shadow-primary/20'
+                : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-highest'"
             >
-              <div class="absolute -right-10 -top-10 w-32 h-32 hex-mask bg-white/10 group-hover:scale-110 transition-transform"></div>
-              <span class="inline-block px-4 py-1.5 bg-amber-500 text-on-tertiary-container text-[10px] font-bold uppercase tracking-[0.2em] rounded-full mb-6">
-                {{ highlight.highlightCategory }}
-              </span>
-              <h3 class="font-display font-bold text-2xl mb-4 leading-snug">{{ highlight.title }}</h3>
-              <p class="opacity-80 font-body text-sm leading-relaxed mb-6">{{ highlight.summary }}</p>
-              <NuxtLink :to="`/news/${highlight.slug}`" class="text-xs font-bold uppercase tracking-widest flex items-center gap-2 group-hover:gap-4 transition-all">
-                Read Article <span>&rarr;</span>
-              </NuxtLink>
-            </div>
+              {{ tab.label }}
+            </button>
           </div>
         </div>
 
-        <!-- Social channels — always shown; links activate when URLs are configured -->
-        <div class="mt-16 pt-12 border-t border-outline-variant/20">
+        <!-- Cards grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <component
+            :is="item.isExternal ? 'a' : NuxtLink"
+            v-for="item in filteredInsights"
+            :key="item.id"
+            v-bind="item.isExternal
+              ? { href: item.externalUrl, target: '_blank', rel: 'noopener noreferrer' }
+              : { to: item.to }"
+            class="group flex flex-col bg-surface-container-lowest rounded-[28px] overflow-hidden border border-outline-variant/10 hover:border-primary/20 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+          >
+            <!-- Type colour bar -->
+            <div class="h-1 w-full flex-shrink-0" :class="(TYPE_COLORS[item.type] ?? DEFAULT_COLORS).bar" />
+
+            <div class="p-7 flex flex-col flex-grow">
+              <!-- Badge + date -->
+              <div class="flex items-center justify-between mb-5">
+                <span
+                  class="text-[9px] font-bold uppercase tracking-[0.18em] px-3 py-1 rounded-full"
+                  :class="(TYPE_COLORS[item.type] ?? DEFAULT_COLORS).badge"
+                >
+                  {{ item.type }}
+                </span>
+                <span class="text-[10px] text-on-surface-variant/50 font-bold">{{ item.date }}</span>
+              </div>
+
+              <!-- Title -->
+              <h3 class="font-display font-bold text-base text-on-surface mb-3 leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+                {{ item.title }}
+              </h3>
+
+              <!-- Summary -->
+              <p class="text-sm font-body text-on-surface-variant opacity-70 leading-relaxed line-clamp-3 flex-grow mb-5">
+                {{ item.summary }}
+              </p>
+
+              <!-- CTA -->
+              <div class="flex items-center gap-1.5 text-[10px] font-bold text-primary uppercase tracking-widest pt-4 border-t border-outline-variant/10 group-hover:gap-3 transition-all">
+                {{ item.ctaLabel }}
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </div>
+            </div>
+          </component>
+
+          <!-- Empty state -->
+          <div v-if="filteredInsights.length === 0" class="col-span-full text-center py-16 text-on-surface-variant opacity-50 font-body text-sm">
+            No items yet.
+          </div>
+        </div>
+
+        <!-- Browse all links -->
+        <div class="mt-10 pt-8 border-t border-outline-variant/10 flex flex-wrap gap-6 justify-end">
+          <NuxtLink to="/publications" class="flex items-center gap-2 text-xs font-bold text-on-surface-variant uppercase tracking-widest hover:text-primary transition-colors">
+            All Publications
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </NuxtLink>
+          <NuxtLink to="/news" class="flex items-center gap-2 text-xs font-bold text-on-surface-variant uppercase tracking-widest hover:text-primary transition-colors">
+            All News & Events
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          </NuxtLink>
+        </div>
+
+        <!-- Social channels -->
+        <div class="mt-12 pt-10 border-t border-outline-variant/20">
           <p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-8">
             Follow our work
           </p>
@@ -248,7 +303,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, resolveComponent } from 'vue'
 import { useAsyncData } from '#imports'
 import { GetHomeDataUseCase } from '@application/use_cases/GetHomeDataUseCase'
 import { HttpProgramAreaRepository } from '@infrastructure/repositories/HttpProgramAreaRepository'
@@ -330,7 +385,11 @@ type Testimonial = {
 
 type SiteSettings = { social?: { platform: string; url: string }[] }
 
-type HomePub = { id: string; title: string; slug: string; summary: string; publishedDate: string; category?: string }
+type HomePub = {
+  id: string; title: string; slug: string; summary: string; publishedDate: string
+  category?: string; publicationType?: 'internal' | 'external'; externalUrl?: string | null
+}
+type HomeNewsEvent = { id: string; title: string; slug: string; date: string; category: string; summary: string }
 
 // Fetches run in parallel on SSR
 const { data: pageData } = useAsyncData('home-page-global', () =>
@@ -350,41 +409,92 @@ const { data: siteSettings } = useAsyncData('site-settings-home', () =>
   $fetch<SiteSettings>(`${apiBase}/api/globals/site-settings`),
 )
 const { data: latestPubsData } = useAsyncData('home-latest-pubs', () =>
-  $fetch<{ docs: HomePub[] }>(`${apiBase}/api/publications?limit=3&sort=-publishedDate&depth=1`),
+  $fetch<{ docs: HomePub[] }>(`${apiBase}/api/publications?limit=4&sort=-publishedDate&depth=1`),
+)
+const { data: latestNewsData } = useAsyncData('home-latest-news', () =>
+  $fetch<{ docs: HomeNewsEvent[] }>(`${apiBase}/api/news-events?limit=5&sort=-date&depth=1`),
 )
 
 const { previewData: page } = usePayloadLivePreview<HomePageGlobal>(pageData)
+const NuxtLink = resolveComponent('NuxtLink')
 
 function isoToDisplayDate(iso: string): string {
   const d = new Date(iso)
-  return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', year: 'numeric', day: 'numeric' })
+}
+function ddmmyyyyToIso(ddmmyyyy: string): string {
+  return ddmmyyyy.split('.').reverse().join('-')
+}
+function isoToShortDisplay(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-const highlights = computed(() =>
-  (homeData.value?.highlightEvents ?? []).slice(0, page.value?.newsSection?.highlightsCount ?? 3),
-)
+type InsightCard = {
+  id: string; source: 'publication' | 'news-event'; type: string
+  title: string; summary: string; date: string; _isoDate: string
+  to: string; isExternal: boolean; externalUrl?: string | null; ctaLabel: string
+}
 
-// Combined feed of news-events + publications, sorted newest-first, capped at 6
-const combinedFeed = computed(() => {
-  const news = (homeData.value?.latestEvents ?? []).filter(e => e.date).map(e => ({
-    id: e.id,
-    title: e.title,
-    summary: e.summary,
-    date: e.date,
-    _isoDate: e.date.split('.').reverse().join('-'), // DD.MM.YYYY → YYYY-MM-DD for sorting
-    to: `/news/${e.slug}`,
-  }))
-  const pubs = (latestPubsData.value?.docs ?? []).filter(p => p.publishedDate).map(p => ({
-    id: p.id,
-    title: p.title,
-    summary: p.summary ?? '',
-    date: isoToDisplayDate(p.publishedDate),
-    _isoDate: p.publishedDate,
-    to: `/publications/${p.slug}`,
-  }))
-  return [...news, ...pubs]
+const TYPE_COLORS: Record<string, { badge: string; bar: string }> = {
+  'Research Paper':  { badge: 'bg-primary/10 text-primary',         bar: 'bg-primary' },
+  'Policy Brief':    { badge: 'bg-primary/10 text-primary',         bar: 'bg-primary' },
+  'Annual Report':   { badge: 'bg-primary/10 text-primary',         bar: 'bg-primary' },
+  'Methodology':     { badge: 'bg-primary/10 text-primary',         bar: 'bg-primary' },
+  'Workshop':        { badge: 'bg-amber-500/10 text-amber-600',     bar: 'bg-amber-500' },
+  'Field Report':    { badge: 'bg-cyan/10 text-cyan-600',           bar: 'bg-cyan' },
+  'Funding':         { badge: 'bg-emerald-500/10 text-emerald-600', bar: 'bg-emerald-500' },
+  'Policy':          { badge: 'bg-sunset/10 text-sunset',           bar: 'bg-sunset' },
+  'News':            { badge: 'bg-primary/10 text-primary',         bar: 'bg-primary' },
+  'Publication':     { badge: 'bg-leaf/10 text-leaf-600',           bar: 'bg-leaf' },
+}
+const DEFAULT_COLORS = { badge: 'bg-primary/10 text-primary', bar: 'bg-primary' }
+
+const allInsights = computed((): InsightCard[] => {
+  const pubs: InsightCard[] = (latestPubsData.value?.docs ?? [])
+    .filter(p => p.publishedDate)
+    .map(p => ({
+      id: p.id,
+      source: 'publication',
+      type: p.category ?? 'Publication',
+      title: p.title,
+      summary: p.summary ?? '',
+      date: isoToShortDisplay(p.publishedDate),
+      _isoDate: p.publishedDate,
+      to: `/publications/${p.slug}`,
+      isExternal: p.publicationType === 'external' && !!p.externalUrl,
+      externalUrl: p.externalUrl,
+      ctaLabel: p.publicationType === 'external' ? 'View Publication' : 'Read Abstract',
+    }))
+  const news: InsightCard[] = (latestNewsData.value?.docs ?? [])
+    .filter(n => n.date)
+    .map(n => ({
+      id: n.id,
+      source: 'news-event',
+      type: n.category,
+      title: n.title,
+      summary: n.summary,
+      date: isoToShortDisplay(n.date),
+      _isoDate: n.date,
+      to: `/news/${n.slug}`,
+      isExternal: false,
+      ctaLabel: 'Read More',
+    }))
+  return [...pubs, ...news]
     .sort((a, b) => b._isoDate.localeCompare(a._isoDate))
-    .slice(0, page.value?.newsSection?.latestEventsCount ?? 6)
+    .slice(0, 9)
+})
+
+const activeFilter = ref<'all' | 'publications' | 'news'>('all')
+const insightFilters = [
+  { id: 'all',          label: 'All'           },
+  { id: 'publications', label: 'Publications'  },
+  { id: 'news',         label: 'News & Events' },
+] as const
+
+const filteredInsights = computed(() => {
+  if (activeFilter.value === 'publications') return allInsights.value.filter(i => i.source === 'publication')
+  if (activeFilter.value === 'news')         return allInsights.value.filter(i => i.source === 'news-event')
+  return allInsights.value
 })
 
 const CHANNEL_META: Record<string, { label: string; description: string; color: string; icon: string }> = {
