@@ -35,11 +35,19 @@ type PayloadGalleryItem = {
   image?: { url?: string } | null; caption?: string | null
 }
 
+type Testimonial = {
+  id: string; quote: string; name: string; title?: string | null
+  organization?: string | null; avatar?: { url?: string } | null
+}
+
 const { data: rawPage } = useAsyncData('gallery-page-global', () =>
   $fetch<GalleryPageGlobal>(`${apiBase}/api/globals/gallery-page`),
 )
 const { data: galleryData } = useAsyncData('gallery', () =>
   $fetch<{ docs: PayloadGalleryItem[] }>(`${apiBase}/api/gallery?limit=100`),
+)
+const { data: testimonialsData } = useAsyncData('testimonials', () =>
+  $fetch<{ docs: Testimonial[] }>(`${apiBase}/api/homepage-testimonials?limit=3&depth=1&sort=order`),
 )
 
 const { previewData: pageData } = usePayloadLivePreview<GalleryPageGlobal>(rawPage)
@@ -224,6 +232,35 @@ const categoryColors: Record<string, string> = {
               />
             </svg>
           </button>
+        </div>
+      </div>
+    </section>
+    <!-- Testimonials -->
+    <section class="py-24 bg-surface-container-low">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-4">Voices from the Field</p>
+        <h2 class="font-display font-bold text-4xl mb-12 tracking-tight">What people say</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div
+            v-for="t in (testimonialsData?.docs ?? [])"
+            :key="t.id"
+            class="p-10 bg-surface rounded-[40px] shadow-sm hover:shadow-xl transition-all text-left group"
+          >
+            <svg class="h-10 w-10 text-amber mb-8 opacity-30 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/>
+            </svg>
+            <p class="font-body text-on-surface-variant text-lg italic mb-10 leading-relaxed">"{{ t.quote }}"</p>
+            <div v-if="t.organization" class="flex items-center gap-4">
+              <div class="w-12 h-12 rounded-full overflow-hidden grayscale group-hover:grayscale-0 transition-all">
+                <img v-if="t.avatar?.url" :src="t.avatar.url" :alt="t.name" class="w-full h-full object-cover" />
+                <div v-else class="w-full h-full bg-gradient-to-br from-primary/20 to-cyan/20"></div>
+              </div>
+              <div>
+                <p class="font-bold text-on-surface">{{ t.name }}</p>
+                <p class="text-xs uppercase tracking-widest text-primary font-bold mt-1">{{ [t.title, t.organization].filter(Boolean).join(', ') }}</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
