@@ -5,6 +5,8 @@ type LexicalElementNode = {
   tag?: string
   listType?: 'bullet' | 'number'
   fields?: { url?: string; newTab?: boolean }
+  value?: { url?: string; alt?: string; width?: number; height?: number }
+  relationTo?: string
   children?: LexicalNode[]
 }
 
@@ -54,6 +56,12 @@ function renderNode(node: LexicalNode): string {
     }
     case 'linebreak':
       return '<br>'
+    case 'upload': {
+      const src = escapeHtml(el.value?.url ?? '')
+      const alt = escapeHtml(el.value?.alt ?? '')
+      if (!src) return ''
+      return `<img src="${src}" alt="${alt}" class="w-full rounded-xl my-6 object-cover" />`
+    }
     default:
       return inner()
   }
