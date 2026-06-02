@@ -112,11 +112,7 @@ const COLOR_CLASS: Record<string, string> = {
         <p class="text-lg font-body text-on-surface-variant leading-relaxed">{{ program.description }}</p>
       </section>
 
-      <!-- Short description (the detailed PA paragraph) -->
-      <section v-if="program.shortDescription">
-        <h2 class="font-display text-2xl font-bold text-on-surface mb-5">About This Program Area</h2>
-        <p class="font-body text-on-surface-variant leading-relaxed">{{ program.shortDescription }}</p>
-      </section>
+      
 
       <!-- Key Activities -->
       <section v-if="program.keyActivities?.length">
