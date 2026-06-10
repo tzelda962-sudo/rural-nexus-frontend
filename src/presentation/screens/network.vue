@@ -132,14 +132,29 @@ function typeIcon(type: Partner['type']) {
             <div>
               <p class="font-display font-bold text-sm leading-snug">{{ member.name }}</p>
               <p class="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant opacity-60 mt-1">{{ member.role }}</p>
+              <p v-if="member.location" class="text-[10px] text-on-surface-variant opacity-50 mt-1 flex items-center gap-1">
+                <MapPin class="w-3 h-3" /> {{ member.location }}
+              </p>
             </div>
-            <div v-if="member.expertise?.length" class="flex flex-wrap gap-1 mt-auto">
+            <p v-if="member.bio" class="text-xs font-body text-on-surface-variant opacity-70 leading-relaxed">
+              {{ member.bio }}
+            </p>
+            <div v-if="member.expertise?.length" class="flex flex-wrap gap-1" :class="member.bio ? '' : 'mt-auto'">
               <span
                 v-for="exp in member.expertise"
                 :key="exp.skill"
                 class="px-2 py-0.5 text-[10px] font-medium bg-surface-container text-on-surface-variant rounded-full"
               >{{ exp.skill }}</span>
             </div>
+            <a
+              v-if="member.link?.linkUrl"
+              :href="member.link.linkUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="mt-auto text-[10px] font-bold uppercase tracking-widest text-primary hover:underline inline-flex items-center gap-1"
+            >
+              {{ member.link.linkLabel || 'Know more' }} →
+            </a>
           </div>
         </div>
 
@@ -153,7 +168,7 @@ function typeIcon(type: Partner['type']) {
     <section class="py-20 bg-surface">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <p class="text-xs font-bold uppercase tracking-[0.3em] text-primary mb-2">Collaborating Institutions</p>
-        <h2 class="text-3xl font-display font-bold mb-12">Past and Current Collaborators</h2>
+        <!-- <h2 class="text-3xl font-display font-bold mb-12">Past and Current Collaborators</h2> -->
 
         <!-- Europe -->
         <div class="mb-14">

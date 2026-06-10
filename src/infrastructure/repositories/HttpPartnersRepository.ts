@@ -16,7 +16,10 @@ export type TeamMemberApi = {
   name: string
   role: string
   memberType: 'ceo' | 'pa-manager' | 'advisory' | 'staff'
+  order?: number | null
   bio?: string
+  location?: string
+  link?: { linkLabel?: string; linkUrl?: string } | null
   expertise?: { skill: string }[]
   avatar?: { url?: string } | null
   show?: boolean
@@ -52,7 +55,7 @@ export class HttpPartnersRepository {
     memberType: 'ceo' | 'pa-manager' | 'advisory',
   ): Promise<TeamMemberApi[]> {
     const res = await $fetch<PayloadList<TeamMemberApi>>(
-      `${this.baseUrl}/api/team?where[memberType][equals]=${memberType}&limit=100&depth=1`,
+      `${this.baseUrl}/api/team?where[memberType][equals]=${memberType}&limit=100&depth=1&sort=order`,
     )
     return res.docs.filter((member) => member.show !== false)
   }

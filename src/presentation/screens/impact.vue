@@ -11,26 +11,11 @@ type ImpactPageGlobal = {
   seo?: { metaTitle?: string; metaDescription?: string; ogImage?: { url?: string } }
 }
 
-type PayloadMetric = {
-  id: string
-  metric: string
-  value: string
-  unit?: string | null
-  description?: string | null
-  icon?: string | null
-  category?: string | null
-  trend?: 'up' | 'down' | 'stable' | null
-  order?: number
-}
-
 const config = useRuntimeConfig()
 const apiBase = config.public.apiBase as string
 
 const { data: rawPage } = useAsyncData('impact-page-global', () =>
   $fetch<ImpactPageGlobal>(`${apiBase}/api/globals/impact-page`),
-)
-const { data: metricsData } = useAsyncData('impact-metrics', () =>
-  $fetch<{ docs: PayloadMetric[] }>(`${apiBase}/api/impact-metrics?limit=50&depth=1&sort=order`),
 )
 
 const { previewData: pageData } = usePayloadLivePreview<ImpactPageGlobal>(rawPage)
@@ -58,8 +43,6 @@ useHead({
         </p>
       </div>
     </section>
-
-    <ImpactMetrics :items="metricsData?.docs ?? []" />
 
     <!-- Verified Outcomes Section -->
     <section class="py-24 bg-white">

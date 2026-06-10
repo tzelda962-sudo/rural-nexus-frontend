@@ -1,45 +1,23 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import type { InterventionCountry } from '@infrastructure/repositories/HttpPartnersRepository'
-import { ArrowLeft, MapPin, X } from 'lucide-vue-next'
+import { MapPin, X, Plus, Minus, Maximize2 } from 'lucide-vue-next'
 
 const props = defineProps<{ countries: InterventionCountry[] }>()
 
 // ── Colors ──────────────────────────────────────────────────────────────────
 const C = {
-  worldBase:          '#D1D9E0',
-  continentHover:     '#94A3B8',
-  outOfFocus:         '#EEF1F4',
-  inContinent:        '#B8C4CE',
+  worldBase:          '#EEF1F4',
   intervention:       '#4ade80',
   interventionHover:  '#16a34a',
-  noInterHover:       '#7B8FA1',
   stroke:             '#FFFFFF',
   strokeW:            '0.4',
 } as const
-
-// ── Continent data ───────────────────────────────────────────────────────────
-const CONTINENTS: Record<string, { name: string; countries: string[] }> = {
-  Africa:          { name: 'Africa',        countries: ['DZ','AO','BJ','BW','BF','BI','CM','CV','CF','TD','KM','CG','CD','CI','DJ','EG','GQ','ER','SZ','ET','GA','GM','GH','GN','GW','KE','LS','LR','LY','MG','MW','ML','MR','MU','MA','MZ','NA','NE','NG','RW','ST','SN','SC','SL','SO','ZA','SS','SD','TZ','TG','TN','UG','EH','ZM','ZW'] },
-  Europe:          { name: 'Europe',        countries: ['AL','AD','AT','BY','BE','BA','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IS','IE','IT','LV','LI','LT','LU','MT','MD','MC','ME','NL','MK','NO','PL','PT','RO','RU','SM','RS','SK','SI','ES','SE','CH','TR','UA','GB','VA'] },
-  Asia:            { name: 'Asia',          countries: ['AF','AM','AZ','BH','BD','BT','BN','KH','CN','GE','IN','ID','IR','IQ','IL','JP','JO','KZ','KW','KG','LA','LB','MY','MV','MN','MM','NP','KP','OM','PK','PS','PH','QA','SA','SG','KR','XK','LK','SY','TW','TJ','TH','TL','TM','AE','UZ','VN','YE'] },
-  'North America': { name: 'North America', countries: ['CA','MX','US','GL','BM','BS','CU','DO','HT','JM','KY','PR','SX','TC','VI'] },
-  'South America': { name: 'South America', countries: ['AR','BO','BR','CL','CO','EC','GY','PY','PE','SR','UY','VE'] },
-  Oceania:         { name: 'Oceania',       countries: ['AU','FJ','KI','MH','FM','NR','NC','NZ','PG','WS','SB','TO','TV','VU'] },
-}
-
-const countryToContinent: Record<string, string> = {}
-Object.entries(CONTINENTS).forEach(([cont, data]) =>
-  data.countries.forEach(c => { countryToContinent[c] = cont }),
-)
 
 // ── State ────────────────────────────────────────────────────────────────────
 const mapRef = ref<HTMLDivElement | null>(null)
 const isLoading = ref(true)
 const loadError = ref<string | null>(null)
-const mode = ref<'world' | 'continent'>('world')
-const activeContinent = ref<string | null>(null)
-const hoveredContinent = ref<string | null>(null)
 const hoveredCountry = ref<string | null>(null)
 const selectedCountry = ref<InterventionCountry | null>(null)
 const tooltip = ref({ visible: false, x: 0, y: 0, text: '', sub: '' })
@@ -52,11 +30,124 @@ const interventionSet = computed(() => {
 
 // ── SVG internals ────────────────────────────────────────────────────────────
 let svgEl: SVGSVGElement | null = null
-let origViewBox = '0 0 1000 507'
-const continentVBCache: Record<string, string> = {}
-let rafId: number | null = null
 
 function getSvg() { return mapRef.value?.querySelector<SVGSVGElement>('svg') ?? null }
+
+// ── Zoom & pan ───────────────────────────────────────────────────────────────
+let origViewBox = '0 0 1000 507'
+const ZOOM_MIN = 1
+const ZOOM_MAX = 8
+const zoom = ref(1)
+let panX = 0
+let panY = 0
+let isPanning = false
+let didPan = false
+let panStart = { x: 0, y: 0 }
+let panOrigin = { x: 0, y: 0 }
+
+function parseVB(vb: string) {
+  const [x, y, w, h] = vb.split(' ').map(Number)
+  return { x: x ?? 0, y: y ?? 0, w: w ?? 1000, h: h ?? 507 }
+}
+
+function applyViewBox() {
+  if (!svgEl) return
+  const orig = parseVB(origViewBox)
+  const w = orig.w / zoom.value
+  const h = orig.h / zoom.value
+  // Clamp pan so the viewBox stays within the original map bounds
+  const maxX = orig.x + orig.w - w
+  const maxY = orig.y + orig.h - h
+  panX = Math.min(Math.max(panX, orig.x), Math.max(maxX, orig.x))
+  panY = Math.min(Math.max(panY, orig.y), Math.max(maxY, orig.y))
+  svgEl.setAttribute('viewBox', `${panX} ${panY} ${w} ${h}`)
+}
+
+function zoomBy(factor: number, center?: { x: number; y: number }) {
+  if (!svgEl) return
+  const orig = parseVB(origViewBox)
+  const current = parseVB(svgEl.getAttribute('viewBox') ?? origViewBox)
+  const newZoom = Math.min(Math.max(zoom.value * factor, ZOOM_MIN), ZOOM_MAX)
+  if (newZoom === zoom.value) return
+
+  // Keep the point under `center` (or the viewBox center) stationary while zooming
+  const cx = center ? current.x + (center.x / svgEl.clientWidth) * current.w : current.x + current.w / 2
+  const cy = center ? current.y + (center.y / svgEl.clientHeight) * current.h : current.y + current.h / 2
+
+  const newW = orig.w / newZoom
+  const newH = orig.h / newZoom
+  panX = cx - (center ? (center.x / svgEl.clientWidth) * newW : newW / 2)
+  panY = cy - (center ? (center.y / svgEl.clientHeight) * newH : newH / 2)
+  zoom.value = newZoom
+  applyViewBox()
+  updateCursor()
+}
+
+function resetZoom() {
+  zoom.value = 1
+  panX = parseVB(origViewBox).x
+  panY = parseVB(origViewBox).y
+  applyViewBox()
+  updateCursor()
+}
+
+function updateCursor() {
+  if (!svgEl) return
+  svgEl.style.cursor = zoom.value > ZOOM_MIN ? 'grab' : ''
+}
+
+function onWheel(e: WheelEvent) {
+  e.preventDefault()
+  const rect = svgEl!.getBoundingClientRect()
+  const center = { x: e.clientX - rect.left, y: e.clientY - rect.top }
+  zoomBy(e.deltaY < 0 ? 1.2 : 1 / 1.2, center)
+}
+
+let pointerDown = false
+let activePointerId: number | null = null
+
+function onPointerDown(e: PointerEvent) {
+  if (zoom.value <= ZOOM_MIN) return
+  pointerDown = true
+  isPanning = false
+  didPan = false
+  panStart = { x: e.clientX, y: e.clientY }
+  panOrigin = { x: panX, y: panY }
+  activePointerId = e.pointerId
+}
+
+function onPointerMove(e: PointerEvent) {
+  if (!pointerDown || !svgEl) return
+
+  if (!isPanning) {
+    if (Math.abs(e.clientX - panStart.x) <= 3 && Math.abs(e.clientY - panStart.y) <= 3) return
+    // Drag exceeded the click threshold — start panning and capture the pointer
+    isPanning = true
+    didPan = true
+    if (activePointerId !== null) svgEl.setPointerCapture(activePointerId)
+    svgEl.style.cursor = 'grabbing'
+    tooltip.value.visible = false
+  }
+
+  const current = parseVB(svgEl.getAttribute('viewBox') ?? origViewBox)
+  const rect = svgEl.getBoundingClientRect()
+  const dx = (e.clientX - panStart.x) / rect.width * current.w
+  const dy = (e.clientY - panStart.y) / rect.height * current.h
+  panX = panOrigin.x - dx
+  panY = panOrigin.y - dy
+  applyViewBox()
+}
+
+function onPointerUp(e: PointerEvent) {
+  if (!pointerDown) return
+  pointerDown = false
+  if (isPanning) {
+    isPanning = false
+    if (activePointerId !== null) svgEl?.releasePointerCapture(activePointerId)
+    if (svgEl) svgEl.style.cursor = zoom.value > ZOOM_MIN ? 'grab' : ''
+  }
+  activePointerId = null
+}
 
 // ── Load & setup ─────────────────────────────────────────────────────────────
 async function loadMap() {
@@ -79,9 +170,6 @@ async function loadMap() {
     svgEl.setAttribute('height', '100%')
     svgEl.style.display = 'block'
 
-    // Store original viewBox
-    origViewBox = svgEl.getAttribute('viewBox') ?? '0 0 1000 507'
-
     // Clear any default black fills baked into the SVG
     svgEl.querySelectorAll<SVGElement>('path,polygon,rect,circle').forEach(el => {
       el.removeAttribute('fill')
@@ -90,8 +178,10 @@ async function loadMap() {
       el.style.cssText = ''
     })
 
-    // Compute continent bounding boxes after a paint frame
-    await new Promise<void>(r => requestAnimationFrame(() => { computeVBs(); r() }))
+    origViewBox = svgEl.getAttribute('viewBox') ?? origViewBox
+    const orig = parseVB(origViewBox)
+    panX = orig.x
+    panY = orig.y
 
     applyStyles()
     attachListeners()
@@ -102,74 +192,29 @@ async function loadMap() {
   }
 }
 
-function computeVBs() {
-  if (!svgEl) return
-  Object.entries(CONTINENTS).forEach(([name, data]) => {
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
-    let hits = 0
-    data.countries.forEach(code => {
-      const el = svgEl!.getElementById(code) as SVGGraphicsElement | null
-      if (!el) return
-      try {
-        const b = el.getBBox()
-        if (b.width < 1 && b.height < 1) return
-        if (b.x < minX) minX = b.x
-        if (b.y < minY) minY = b.y
-        if (b.x + b.width > maxX) maxX = b.x + b.width
-        if (b.y + b.height > maxY) maxY = b.y + b.height
-        hits++
-      } catch { /* getBBox unavailable */ }
-    })
-    if (hits === 0 || minX === Infinity) return
-    const px = (maxX - minX) * 0.1
-    const py = (maxY - minY) * 0.1
-    continentVBCache[name] = `${minX - px} ${minY - py} ${maxX - minX + px * 2} ${maxY - minY + py * 2}`
-  })
-}
-
 // ── Styling ──────────────────────────────────────────────────────────────────
 function applyStyles() {
   if (!svgEl) return
 
-  if (mode.value === 'world') {
-    const hSet = hoveredContinent.value
-      ? new Set(CONTINENTS[hoveredContinent.value]?.countries ?? [])
-      : null
+  const selId = selectedCountry.value?.isoCode?.toUpperCase()
 
-    svgEl.querySelectorAll<SVGPathElement>('path[id]').forEach(p => {
-      p.style.fill = hSet?.has(p.id) ? C.continentHover : C.worldBase
-      p.style.stroke = C.stroke
-      p.style.strokeWidth = C.strokeW
+  svgEl.querySelectorAll<SVGPathElement>('path[id]').forEach(p => {
+    const id = p.id
+    const isInt = interventionSet.value.has(id)
+    const isHov = hoveredCountry.value === id
+    const isSel = selId === id
+
+    if (isInt) {
+      p.style.fill = (isSel || isHov) ? C.interventionHover : C.intervention
       p.style.cursor = 'pointer'
-      p.style.transition = 'fill 0.2s ease'
-    })
-  } else {
-    const active = new Set(CONTINENTS[activeContinent.value ?? '']?.countries ?? [])
-    const selId = selectedCountry.value?.isoCode?.toUpperCase()
-
-    svgEl.querySelectorAll<SVGPathElement>('path[id]').forEach(p => {
-      const id = p.id
-      if (!active.has(id)) {
-        p.style.fill = C.outOfFocus
-        p.style.cursor = 'default'
-      } else {
-        const isInt = interventionSet.value.has(id)
-        const isHov = hoveredCountry.value === id
-        const isSel = selId === id
-        if (isSel || isHov) {
-          p.style.fill = isInt ? C.interventionHover : C.noInterHover
-        } else if (isInt) {
-          p.style.fill = C.intervention
-        } else {
-          p.style.fill = C.inContinent
-        }
-        p.style.cursor = 'pointer'
-      }
-      p.style.stroke = C.stroke
-      p.style.strokeWidth = C.strokeW
-      p.style.transition = 'fill 0.2s ease'
-    })
-  }
+    } else {
+      p.style.fill = C.worldBase
+      p.style.cursor = 'default'
+    }
+    p.style.stroke = C.stroke
+    p.style.strokeWidth = C.strokeW
+    p.style.transition = 'fill 0.2s ease'
+  })
 }
 
 // ── Event handlers ───────────────────────────────────────────────────────────
@@ -186,106 +231,62 @@ function attachListeners() {
   svgEl?.addEventListener('mousemove', onMove)
   svgEl?.addEventListener('mouseleave', onLeave)
   svgEl?.addEventListener('click', onClick)
+  svgEl?.addEventListener('wheel', onWheel, { passive: false })
+  svgEl?.addEventListener('pointerdown', onPointerDown)
+  svgEl?.addEventListener('pointermove', onPointerMove)
+  svgEl?.addEventListener('pointerup', onPointerUp)
+  svgEl?.addEventListener('pointerleave', onPointerUp)
 }
 
 function onMove(e: MouseEvent) {
+  if (isPanning) { tooltip.value.visible = false; return }
   const id = idFromEvent(e)
+  const isInt = id ? interventionSet.value.has(id) : false
+  const nh = isInt ? id : null
 
-  if (mode.value === 'world') {
-    const cont = id ? (countryToContinent[id] ?? null) : null
-    if (cont !== hoveredContinent.value) { hoveredContinent.value = cont; applyStyles() }
-    tooltip.value = cont
-      ? { visible: true, x: e.clientX, y: e.clientY, text: cont, sub: 'Click to explore' }
-      : { ...tooltip.value, visible: false }
-  } else {
-    const inActive = id ? countryToContinent[id] === activeContinent.value : false
-    const nh = inActive ? id : null
-    if (nh !== hoveredCountry.value) { hoveredCountry.value = nh; applyStyles() }
-    if (id && inActive) {
-      const entry = props.countries.find(c => c.isoCode?.toUpperCase() === id)
-      tooltip.value = {
-        visible: true, x: e.clientX, y: e.clientY,
-        text: entry?.name ?? id,
-        sub: entry ? 'Click for details' : 'No intervention data',
-      }
-    } else {
-      tooltip.value.visible = false
+  if (nh !== hoveredCountry.value) { hoveredCountry.value = nh; applyStyles() }
+
+  if (id && isInt) {
+    const entry = props.countries.find(c => c.isoCode?.toUpperCase() === id)
+    tooltip.value = {
+      visible: true, x: e.clientX, y: e.clientY,
+      text: entry?.name ?? id,
+      sub: 'Click for details',
     }
+  } else {
+    tooltip.value.visible = false
   }
 }
 
 function onLeave() {
-  hoveredContinent.value = null
   hoveredCountry.value = null
   tooltip.value.visible = false
   applyStyles()
 }
 
 function onClick(e: MouseEvent) {
+  if (didPan) { didPan = false; return }
   const id = idFromEvent(e)
   if (!id) return
+  if (!interventionSet.value.has(id)) return
 
-  if (mode.value === 'world') {
-    const cont = countryToContinent[id]
-    if (cont) enterContinent(cont)
-  } else {
-    if (countryToContinent[id] !== activeContinent.value) return
-    const entry = props.countries.find(c => c.isoCode?.toUpperCase() === id) ?? null
-    if (!entry) return // only clickable for intervention countries
-    selectedCountry.value = selectedCountry.value?.isoCode?.toUpperCase() === id ? null : entry
-    applyStyles()
-  }
-}
-
-// ── ViewBox zoom animation ───────────────────────────────────────────────────
-function animVB(target: string, ms = 720) {
-  if (!svgEl) return
-  const a = (svgEl.getAttribute('viewBox') ?? origViewBox).split(' ').map(Number)
-  const b = target.split(' ').map(Number)
-  if (a.length < 4 || b.length < 4) return
-  const ax = a[0]!, ay = a[1]!, aw = a[2]!, ah = a[3]!
-  const bx = b[0]!, by = b[1]!, bw = b[2]!, bh = b[3]!
-  const t0 = performance.now()
-  if (rafId !== null) cancelAnimationFrame(rafId)
-  function ease(t: number) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2 }
-  function frame(now: number) {
-    const t = Math.min((now - t0) / ms, 1)
-    const e = ease(t)
-    svgEl!.setAttribute('viewBox', `${ax+(bx-ax)*e} ${ay+(by-ay)*e} ${aw+(bw-aw)*e} ${ah+(bh-ah)*e}`)
-    rafId = t < 1 ? requestAnimationFrame(frame) : null
-  }
-  rafId = requestAnimationFrame(frame)
-}
-
-function enterContinent(name: string) {
-  const vb = continentVBCache[name]
-  if (!vb) return
-  activeContinent.value = name
-  mode.value = 'continent'
-  selectedCountry.value = null
-  hoveredContinent.value = null
-  tooltip.value.visible = false
-  animVB(vb)
-  setTimeout(applyStyles, 40)
-}
-
-function backToWorld() {
-  mode.value = 'world'
-  activeContinent.value = null
-  selectedCountry.value = null
-  hoveredCountry.value = null
-  tooltip.value.visible = false
-  animVB(origViewBox)
-  setTimeout(applyStyles, 40)
+  const entry = props.countries.find(c => c.isoCode?.toUpperCase() === id) ?? null
+  if (!entry) return
+  selectedCountry.value = selectedCountry.value?.isoCode?.toUpperCase() === id ? null : entry
+  applyStyles()
 }
 
 // ── Lifecycle ────────────────────────────────────────────────────────────────
 onMounted(() => { if (import.meta.client) loadMap() })
 onUnmounted(() => {
-  if (rafId !== null) cancelAnimationFrame(rafId)
   svgEl?.removeEventListener('mousemove', onMove)
   svgEl?.removeEventListener('mouseleave', onLeave)
   svgEl?.removeEventListener('click', onClick)
+  svgEl?.removeEventListener('wheel', onWheel)
+  svgEl?.removeEventListener('pointerdown', onPointerDown)
+  svgEl?.removeEventListener('pointermove', onPointerMove)
+  svgEl?.removeEventListener('pointerup', onPointerUp)
+  svgEl?.removeEventListener('pointerleave', onPointerUp)
 })
 watch(() => props.countries, applyStyles, { deep: true })
 </script>
@@ -310,26 +311,42 @@ watch(() => props.countries, applyStyles, { deep: true })
         {{ loadError }}
       </div>
 
-      <!-- ── Controls (top-left) ───────────────────────────── -->
-      <div class="absolute top-4 left-4 z-10 flex items-center gap-2">
-        <Transition name="fade">
-          <button
-            v-if="mode === 'continent'"
-            @click="backToWorld"
-            class="flex items-center gap-2 px-4 py-2 bg-white/90 backdrop-blur-sm rounded-xl shadow-md text-sm font-bold text-on-surface hover:bg-white transition-all"
-          >
-            <ArrowLeft class="w-4 h-4" />
-            World view
-          </button>
-        </Transition>
-      </div>
-
       <!-- ── Mode badge (top-right) ────────────────────────── -->
       <div class="absolute top-4 right-4 z-10">
         <div class="px-3 py-1.5 bg-white/80 backdrop-blur-sm rounded-full text-[11px] font-bold uppercase tracking-widest text-on-surface-variant shadow-sm">
-          <template v-if="mode === 'world'">Hover a continent · Click to zoom</template>
-          <template v-else>{{ activeContinent }} · Click a country</template>
+          Click a highlighted country
         </div>
+      </div>
+
+      <!-- ── Zoom controls (bottom-left) ───────────────────── -->
+      <div class="absolute bottom-4 left-4 z-10 flex flex-col gap-1.5">
+        <button
+          type="button"
+          class="w-9 h-9 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-xl shadow-md text-on-surface hover:bg-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          :disabled="zoom >= 8"
+          @click="zoomBy(1.4)"
+          title="Zoom in"
+        >
+          <Plus class="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          class="w-9 h-9 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-xl shadow-md text-on-surface hover:bg-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          :disabled="zoom <= 1"
+          @click="zoomBy(1 / 1.4)"
+          title="Zoom out"
+        >
+          <Minus class="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          class="w-9 h-9 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-xl shadow-md text-on-surface hover:bg-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          :disabled="zoom <= 1"
+          @click="resetZoom"
+          title="Reset view"
+        >
+          <Maximize2 class="w-4 h-4" />
+        </button>
       </div>
 
       <!-- ── Country info panel ────────────────────────────── -->
@@ -384,21 +401,14 @@ watch(() => props.countries, applyStyles, { deep: true })
         <span>Intervention countries</span>
       </div>
       <div class="flex items-center gap-2">
-        <span class="w-4 h-3 rounded inline-block" style="background:#B8C4CE"></span>
-        <span>Other countries in region</span>
-      </div>
-      <div class="flex items-center gap-2 text-xs opacity-60">
-        <span>In world view: click any continent to zoom in</span>
+        <span class="w-4 h-3 rounded inline-block" style="background:#EEF1F4"></span>
+        <span>Other countries</span>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* Tooltip fade */
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s, transform 0.2s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; transform: translateX(-6px); }
-
 /* Country info panel slide */
 .panel-slide-enter-active { animation: panel-in 0.3s cubic-bezier(0.34,1.4,0.64,1) forwards; }
 .panel-slide-leave-active { animation: panel-in 0.2s ease reverse forwards; }

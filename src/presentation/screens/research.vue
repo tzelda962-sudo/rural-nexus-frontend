@@ -52,11 +52,21 @@ type PayloadPub = {
   externalUrl?: string | null
 }
 
+type ResearchTool = {
+  id: string
+  title: string
+  description?: string
+  order?: number
+}
+
 const { data: rawPage } = useAsyncData('research-page-global', () =>
   $fetch<ResearchPageGlobal>(`${apiBase}/api/globals/research-page`),
 )
 const { data: allResources } = useAsyncData('researchData', () =>
   $fetch<{ docs: PayloadPub[] }>(`${apiBase}/api/publications?limit=200&sort=-publishedDate&depth=1`),
+)
+const { data: researchToolsData } = useAsyncData('research-tools', () =>
+  $fetch<{ docs: ResearchTool[] }>(`${apiBase}/api/research-tools?limit=50&sort=order`),
 )
 
 const { previewData: pageData } = usePayloadLivePreview<ResearchPageGlobal>(rawPage)
@@ -124,8 +134,27 @@ const filteredResources = computed(() => {
       </div>
     </section>
 
+    <!-- Research Tools -->
+    <section v-if="researchToolsData?.docs?.length" class="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="font-display text-3xl md:text-4xl font-bold tracking-tight text-on-surface mb-10">
+        Research Tools & Methodologies
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          v-for="tool in researchToolsData.docs"
+          :key="tool.id"
+          class="p-8 bg-surface-container-lowest rounded-[32px] border border-outline-variant/10 shadow-sm hover:shadow-lg transition-all"
+        >
+          <h3 class="font-display font-bold text-lg text-on-surface mb-2">{{ tool.title }}</h3>
+          <p v-if="tool.description" class="text-sm font-body text-on-surface-variant opacity-70 leading-relaxed">
+            {{ tool.description }}
+          </p>
+        </div>
+      </div>
+    </section>
+
     <!-- Interactive Repository Area -->
-    <section class="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow w-full">
+    <section class="pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex-grow w-full">
 
       <!-- Toolbar: Refined Search & Filter -->
       <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-16 gap-8">

@@ -211,6 +211,7 @@ import { usePayloadLivePreview } from '../composables/usePayloadLivePreview'
 import { HttpProgramAreaRepository } from '@infrastructure/repositories/HttpProgramAreaRepository'
 import { HttpPartnersRepository, type InterventionCountry } from '@infrastructure/repositories/HttpPartnersRepository'
 import WorldInterventionMap from '../components/WorldInterventionMap.vue'
+import { COLOR_PALETTE } from '../constants/colorPalette'
 
 type AboutPillar = { title: string; description: string }
 type AboutRegion = { name: string; countries: string }
@@ -261,15 +262,9 @@ useHead({
   ],
 })
 
-const COLOR_HEX: Record<string, string> = {
-  cyan: '#06b6d4',
-  primary: '#1a4314',
-  navy: '#0B192C',
-  amber: '#f59e0b',
-  leaf: '#4ade80',
-}
+const COLOR_HEX: Record<string, string> = COLOR_PALETTE
 function getColor(theme: string): string {
-  return COLOR_HEX[theme] ?? COLOR_HEX.primary
+  return COLOR_HEX[theme] ?? COLOR_HEX.primary ?? '#1a4314'
 }
 
 const headerBgStyle = computed(() => {

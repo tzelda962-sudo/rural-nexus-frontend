@@ -20,9 +20,50 @@
   /* Accent / Secondary / Networking & Cards */
   --color-secondary-container: #d6e3fe;
   --color-navy: #0B192C; /* Navy/Dark Blue from spec */
+  --color-sunset: #fb923c;
   --color-cyan: #06b6d4;
   --color-amber: #f59e0b;
   --color-leaf: #4ade80;
+  --color-emerald: #10b981;
+  --color-merlot: #831923;
+  --color-blue: #22264b;
+  --color-yellow: #E8CC12;
+  --color-orange: #dc2626;
+  --color-pink: #f94144;
+  --color-purple: #a78bfa;
+  --color-teal: #0d9488;
+  --color-gold: #d4af37;
+  --color-bronze: #a8641b;
+  --color-olive: #847c20;
+  --color-slate: #22264b;
+  --color-crimson: #831923;
+  --color-indigo: #22264b;
+  --color-lilac: #6f53e0;
+  --color-rose: #f472b6;
+  --color-sky: #3b82f6;
+  --color-violet: #8b5cf6;
+  --color-lime: #84cc16;
+  --color-fuchsia: #f43f5e;
+  --color-amber: #f59e0b;
+  --color-emerald: #10b981;
+  --color-fuchsia: #f43f5e;
+  --color-indigo: #22264b;
+  --color-lime: #84cc16;
+  --color-merlot: #831923;
+  --color-olive: #847c20;
+  --color-orange: #dc2626;
+  --color-pink: #f94144;
+  --color-purple: #a78bfa;
+  --color-slate: #22264b;
+  --color-teal: #0d9488;
+  --color-violet: #8b5cf6;
+  --color-yellow: #E8CC12;
+  --color-bronze: #a8641b;
+  --color-gold: #d4af37;
+  --color-lilac: #6f53e0;
+  --color-rose: #f472b6;
+  --color-sky: #3b82f6;
+  --color-violet: #8b5cf6;
 
   /* General Text */
   --color-on-surface: #191c1b;

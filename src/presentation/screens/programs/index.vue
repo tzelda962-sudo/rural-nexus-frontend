@@ -8,6 +8,7 @@ import { MockTeamRepository } from '@infrastructure/repositories/MockTeamReposit
 import { Check, X, ArrowRight, Globe, Layers, ChevronRight } from 'lucide-vue-next'
 import { usePayloadLivePreview } from '../../composables/usePayloadLivePreview'
 import type { ProgramArea } from '@domain/entities/ProgramArea'
+import { COLOR_PALETTE } from '../../constants/colorPalette'
 
 type ProgramsPageGlobal = {
   header: {
@@ -46,13 +47,22 @@ useHead({
 // Color palette matching the CSS design tokens
 type HexColors = { bg: string; glow: string; ring: string; light: string }
 const DEFAULT_COLORS: HexColors = { bg: '#1a4314', glow: 'rgba(26,67,20,0.45)', ring: 'rgba(26,67,20,0.7)', light: 'rgba(26,67,20,0.12)' }
-const COLOR_MAP: Record<string, HexColors> = {
-  cyan:    { bg: '#06b6d4', glow: 'rgba(6,182,212,0.45)',   ring: 'rgba(6,182,212,0.7)',   light: 'rgba(6,182,212,0.12)' },
-  primary: DEFAULT_COLORS,
-  navy:    { bg: '#0B192C', glow: 'rgba(11,25,44,0.5)',     ring: 'rgba(11,25,44,0.7)',    light: 'rgba(11,25,44,0.10)' },
-  amber:   { bg: '#f59e0b', glow: 'rgba(245,158,11,0.45)', ring: 'rgba(245,158,11,0.7)', light: 'rgba(245,158,11,0.12)' },
-  leaf:    { bg: '#4ade80', glow: 'rgba(74,222,128,0.45)', ring: 'rgba(74,222,128,0.7)', light: 'rgba(74,222,128,0.12)' },
+
+function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace('#', '')
+  const r = parseInt(h.substring(0, 2), 16)
+  const g = parseInt(h.substring(2, 4), 16)
+  const b = parseInt(h.substring(4, 6), 16)
+  return `rgba(${r},${g},${b},${alpha})`
 }
+
+const COLOR_MAP: Record<string, HexColors> = Object.fromEntries(
+  Object.entries(COLOR_PALETTE).map(([name, hex]) => [
+    name,
+    { bg: hex, glow: hexToRgba(hex, 0.45), ring: hexToRgba(hex, 0.7), light: hexToRgba(hex, 0.12) },
+  ]),
+)
+COLOR_MAP.primary = DEFAULT_COLORS
 function getColors(theme: string): HexColors { return COLOR_MAP[theme] ?? DEFAULT_COLORS }
 
 // Honeycomb row splitting: 3 → 2 → 3 → 2 …

@@ -41,6 +41,22 @@ const { data: initiativesData } = await useAsyncData('projects-initiatives', () 
   $fetch<{ docs: Initiative[] }>(`${apiBase}/api/initiatives?showcase=true`),
 )
 
+type PayloadMetric = {
+  id: string
+  metric: string
+  value: string
+  unit?: string | null
+  description?: string | null
+  icon?: string | null
+  category?: string | null
+  trend?: 'up' | 'down' | 'stable' | null
+  order?: number
+}
+
+const { data: metricsData } = useAsyncData('impact-metrics', () =>
+  $fetch<{ docs: PayloadMetric[] }>(`${apiBase}/api/impact-metrics?limit=50&depth=1&sort=order`),
+)
+
 const projects = computed(() =>
   (initiativesData.value?.docs ?? []).map((i, idx) => ({
     id: `${i.program.slug}-${idx}`,
@@ -74,6 +90,18 @@ const projects = computed(() =>
             {{ pageData?.header?.body ?? 'Field initiatives and development projects currently underway across our program areas.' }}
           </p>
         </div>
+      </div>
+    </section>
+
+    <!-- Track Record -->
+    <ImpactMetrics :items="metricsData?.docs ?? []" />
+    <section class="pb-4 -mt-12 relative z-10">
+      <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <p class="text-xs font-body text-on-surface-variant opacity-50 leading-relaxed italic">
+          These figures reflect the past and ongoing track record of RuralNexus's CEO and other team members,
+          accumulated across previous leadership roles, research engagements, and organizational affiliations —
+          they are not exclusively attributable to RuralNexus's own direct projects.
+        </p>
       </div>
     </section>
 

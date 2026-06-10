@@ -108,8 +108,17 @@
         <h2 class="font-display font-bold text-4xl mb-12 tracking-tight">
           {{ page?.testimonialsSection?.heading ?? '"They say about us"' }}
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div v-for="t in (testimonialsData?.docs ?? [])" :key="t.id" class="p-10 bg-surface rounded-[40px] shadow-sm hover:shadow-xl transition-all text-left group">
+        <div v-if="(testimonialsData?.docs ?? []).length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div v-for="t in (testimonialsData?.docs ?? [])" :key="t.id" class="relative p-10 bg-surface rounded-[40px] shadow-sm hover:shadow-xl transition-all text-left group">
+            <button
+              type="button"
+              class="absolute top-6 right-6 p-2 rounded-full text-on-surface-variant/50 hover:text-primary hover:bg-primary/10 transition-colors"
+              :title="copiedId === t.id ? 'Copied!' : 'Share this testimonial'"
+              @click="share(t.id, t)"
+            >
+              <Share2 class="w-4 h-4" />
+            </button>
+            <span v-if="copiedId === t.id" class="absolute top-6 right-14 text-[10px] font-bold uppercase tracking-widest text-primary">Copied!</span>
             <svg class="h-10 w-10 text-amber mb-8 opacity-30 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 24 24"><path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"/></svg>
             <p class="font-body text-on-surface-variant text-lg italic mb-10 leading-relaxed">"{{ t.quote }}"</p>
             <div class="flex items-center gap-4" v-if="t.organization">
@@ -124,6 +133,19 @@
             </div>
           </div>
         </div>
+        <div v-else class="text-center py-16 text-on-surface-variant opacity-50 font-body text-sm">
+          Coming Soon
+        </div>
+
+        <div class="mt-12 flex justify-center">
+          <NuxtLink
+            to="/gallery"
+            class="px-10 py-5 border border-on-surface/20 text-on-surface rounded-2xl font-bold hover:bg-on-surface/5 transition-all backdrop-blur-sm inline-flex items-center gap-2"
+          >
+            View Our Gallery
+          </NuxtLink>
+        </div>
+
       </div>
     </section>
 
@@ -304,7 +326,9 @@
 
 <script setup lang="ts">
 import { computed, ref, resolveComponent } from 'vue'
+import { Share2 } from 'lucide-vue-next'
 import { useAsyncData } from '#imports'
+import { useShareTestimonial } from '../composables/useShareTestimonial'
 import { GetHomeDataUseCase } from '@application/use_cases/GetHomeDataUseCase'
 import { HttpProgramAreaRepository } from '@infrastructure/repositories/HttpProgramAreaRepository'
 import { HttpNewsEventRepository } from '@infrastructure/repositories/HttpNewsEventRepository'
@@ -405,6 +429,7 @@ const { data: homeData } = useAsyncData('homeData', () =>
 const { data: testimonialsData } = useAsyncData('testimonials', () =>
   $fetch<{ docs: Testimonial[] }>(`${apiBase}/api/homepage-testimonials?limit=3&depth=1&sort=order`),
 )
+const { share, copiedId } = useShareTestimonial()
 const { data: siteSettings } = useAsyncData('site-settings-home', () =>
   $fetch<SiteSettings>(`${apiBase}/api/globals/site-settings`),
 )
