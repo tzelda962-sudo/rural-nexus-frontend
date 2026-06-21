@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { Component } from 'vue'
 import {
   Droplets, Sprout, ShieldAlert, BookOpen, Tractor, Heart,
   Layers, Rocket, Globe, Target, Zap, Users, Check, FileText,
   Info, BarChart3, MapPin, MessageSquareQuote, Quote, ExternalLink,
 } from 'lucide-vue-next'
+import { lexicalToHtml } from '../utils/lexicalToHtml'
+import DetailModal from '../components/DetailModal.vue'
 
 const config = useRuntimeConfig()
 const apiBase = config.public.apiBase as string
@@ -34,6 +36,9 @@ const ICON_MAP: Record<string, Component> = {
 type Initiative = {
   title: string; slug: string; description: string
   stat?: string | null; location?: string | null; status?: string | null; icon?: string | null
+  heroImage?: { url?: string } | null
+  longDescription?: unknown
+  link?: { linkLabel?: string; linkUrl?: string } | null
   program: { id: string; title: string; slug: string; code: string; color: string }
 }
 
@@ -67,9 +72,16 @@ const projects = computed(() =>
     status: i.status ?? 'Active',
     icon: ICON_MAP[i.icon ?? ''] ?? Layers,
     programSlug: i.program.slug,
+    programTitle: i.program.title,
     slug: i.slug,
+    heroImage: i.heroImage ?? null,
+    longDescription: i.longDescription ?? null,
+    link: i.link ?? null,
   })),
 )
+
+const selectedProject = ref<typeof projects.value[number] | null>(null)
+const selectedProjectHtml = computed(() => lexicalToHtml(selectedProject.value?.longDescription))
 </script>
 
 <template>
@@ -129,9 +141,18 @@ const projects = computed(() =>
             <div class="flex items-center gap-2 text-[10px] font-bold text-on-surface-variant mb-6 opacity-50 uppercase tracking-widest">
               <MapPin class="w-3 h-3" /> {{ proj.location }}
             </div>
-            <div class="border-t border-outline-variant/10 pt-6">
-              <p class="text-xl font-display font-bold text-primary mb-0.5">{{ proj.stat }}</p>
-              <p class="text-[11px] font-bold text-on-surface-variant opacity-50 uppercase tracking-widest">Impact metric</p>
+            <div class="border-t border-outline-variant/10 pt-6 flex items-end justify-between gap-4">
+              <div>
+                <p class="text-xl font-display font-bold text-primary mb-0.5">{{ proj.stat }}</p>
+                <p class="text-[11px] font-bold text-on-surface-variant opacity-50 uppercase tracking-widest">Impact metric</p>
+              </div>
+              <button
+                type="button"
+                class="text-[10px] font-bold uppercase tracking-widest text-primary hover:underline inline-flex items-center gap-1 flex-shrink-0"
+                @click="selectedProject = proj"
+              >
+                View details →
+              </button>
             </div>
           </article>
         </div>
@@ -150,6 +171,41 @@ const projects = computed(() =>
         </NuxtLink>
       </div>
     </section>
+
+    <!-- ── Project detail modal ──────────────────────────────────────── -->
+    <DetailModal :open="!!selectedProject" @close="selectedProject = null">
+      <template v-if="selectedProject">
+        <div v-if="selectedProject.heroImage?.url" class="w-full h-44 rounded-2xl overflow-hidden mb-5 -mt-2">
+          <img :src="selectedProject.heroImage.url" :alt="selectedProject.title" class="w-full h-full object-cover" />
+        </div>
+        <div class="flex items-center justify-between gap-4 mb-4">
+          <h3 class="font-display font-bold text-xl leading-tight">{{ selectedProject.title }}</h3>
+          <span class="text-[10px] font-bold px-3 py-1 bg-surface-container rounded-full uppercase tracking-widest text-on-surface-variant flex-shrink-0">
+            {{ selectedProject.status }}
+          </span>
+        </div>
+        <p v-if="selectedProject.location" class="flex items-center gap-1.5 text-[11px] font-bold text-on-surface-variant opacity-60 uppercase tracking-widest mb-4">
+          <MapPin class="w-3.5 h-3.5" /> {{ selectedProject.location }} · {{ selectedProject.programTitle }}
+        </p>
+        <p class="text-sm font-body text-on-surface-variant leading-relaxed mb-5">
+          {{ selectedProject.description }}
+        </p>
+        <div v-if="selectedProjectHtml" v-html="selectedProjectHtml" class="prose-like font-body text-sm text-on-surface-variant mb-5" />
+        <div v-if="selectedProject.stat" class="border-t border-outline-variant/10 pt-5 mb-5">
+          <p class="text-xl font-display font-bold text-primary mb-0.5">{{ selectedProject.stat }}</p>
+          <p class="text-[11px] font-bold text-on-surface-variant opacity-50 uppercase tracking-widest">Impact metric</p>
+        </div>
+        <a
+          v-if="selectedProject.link?.linkUrl"
+          :href="selectedProject.link.linkUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-primary hover:underline"
+        >
+          {{ selectedProject.link.linkLabel || 'Learn more' }} <ExternalLink class="w-3.5 h-3.5" />
+        </a>
+      </template>
+    </DetailModal>
   </div>
 </template>
 

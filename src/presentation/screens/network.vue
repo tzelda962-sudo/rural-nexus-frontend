@@ -8,6 +8,7 @@ import {
   type InterventionCountry,
 } from '@infrastructure/repositories/HttpPartnersRepository'
 import WorldInterventionMap from '../components/WorldInterventionMap.vue'
+import MapTilerInterventionMap from '../components/MapTilerInterventionMap.vue'
 import DetailModal from '../components/DetailModal.vue'
 import ImageLightbox from '../components/ImageLightbox.vue'
 import { Globe, GraduationCap, FlaskConical, Handshake, MapPin, ExternalLink } from 'lucide-vue-next'
@@ -294,6 +295,11 @@ const lightboxImage = ref<{ url: string; alt: string } | null>(null)
         >
           {{ country.name }}
         </span>
+      </div>
+
+      <!-- Trial: MapTiler-powered map (evaluating as a replacement) -->
+      <div class="px-4 sm:px-6 lg:px-8 mt-14">
+        <MapTilerInterventionMap :countries="interventionCountries ?? []" />
       </div>
     </section>
 

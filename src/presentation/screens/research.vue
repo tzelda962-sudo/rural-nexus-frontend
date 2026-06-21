@@ -56,6 +56,7 @@ type ResearchTool = {
   id: string
   title: string
   description?: string
+  link?: { linkLabel?: string; linkUrl?: string } | null
   order?: number
 }
 
@@ -143,12 +144,21 @@ const filteredResources = computed(() => {
         <div
           v-for="tool in researchToolsData.docs"
           :key="tool.id"
-          class="p-8 bg-surface-container-lowest rounded-[32px] border border-outline-variant/10 shadow-sm hover:shadow-lg transition-all"
+          class="p-8 bg-surface-container-lowest rounded-[32px] border border-outline-variant/10 shadow-sm hover:shadow-lg transition-all flex flex-col"
         >
           <h3 class="font-display font-bold text-lg text-on-surface mb-2">{{ tool.title }}</h3>
-          <p v-if="tool.description" class="text-sm font-body text-on-surface-variant opacity-70 leading-relaxed">
+          <p v-if="tool.description" class="text-sm font-body text-on-surface-variant opacity-70 leading-relaxed flex-grow">
             {{ tool.description }}
           </p>
+          <a
+            v-if="tool.link?.linkUrl"
+            :href="tool.link.linkUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mt-6 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-primary hover:underline"
+          >
+            {{ tool.link.linkLabel || 'Learn more' }} <ExternalLink class="w-3.5 h-3.5" />
+          </a>
         </div>
       </div>
     </section>

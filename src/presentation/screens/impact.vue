@@ -8,6 +8,13 @@ type ImpactPageGlobal = {
     headlineEmphasis?: string
     body?: string
   }
+  assessmentSection?: {
+    heading?: string
+    body?: string
+    ctaLabel?: string
+    ctaPath?: string
+    badges?: { value: string; label: string }[]
+  }
   seo?: { metaTitle?: string; metaDescription?: string; ogImage?: { url?: string } }
 }
 
@@ -51,31 +58,28 @@ useHead({
             <div class="absolute right-0 top-0 w-64 h-64 hex-mask bg-primary opacity-5 -translate-y-1/2 translate-x-1/2"></div>
             <div class="grid lg:grid-cols-2 gap-16 items-center">
                <div>
-                  <h2 class="font-display text-3xl md:text-4xl font-bold text-on-surface mb-6">Open Assessment Protocol</h2>
+                  <h2 class="font-display text-3xl md:text-4xl font-bold text-on-surface mb-6">{{ pageData?.assessmentSection?.heading ?? 'Open Assessment Protocol' }}</h2>
                   <p class="font-body text-on-surface-variant opacity-70 leading-relaxed mb-8">
-                    Our impact data is verified through a transdisciplinary assessment protocol that combines regional field reports with satellite-verified agronomic shifts. We don't just report success; we share the lessons.
+                    {{ pageData?.assessmentSection?.body ?? "Our impact data is verified through a transdisciplinary assessment protocol that combines regional field reports with satellite-verified agronomic shifts. We don't just report success; we share the lessons." }}
                   </p>
-                  <NuxtLink to="/research" class="inline-flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest group">
-                    Explore Methodologies
+                  <NuxtLink :to="pageData?.assessmentSection?.ctaPath ?? '/research'" class="inline-flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest group">
+                    {{ pageData?.assessmentSection?.ctaLabel ?? 'Explore Methodologies' }}
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="transition-transform group-hover:translate-x-1"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
                   </NuxtLink>
                </div>
                <div class="grid grid-cols-2 gap-4">
-                  <div class="p-8 bg-white rounded-3xl border border-outline-variant/10">
-                     <p class="text-2xl font-display font-bold text-primary mb-1">100%</p>
-                     <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Geographical Data</p>
-                  </div>
-                  <div class="p-8 bg-white rounded-3xl border border-outline-variant/10">
-                     <p class="text-2xl font-display font-bold text-primary mb-1">24/7</p>
-                     <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Node Monitoring</p>
-                  </div>
-                  <div class="p-8 bg-white rounded-3xl border border-outline-variant/10">
-                     <p class="text-2xl font-display font-bold text-primary mb-1">Peer</p>
-                     <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Reviewed Outcomes</p>
-                  </div>
-                  <div class="p-8 bg-white rounded-3xl border border-outline-variant/10">
-                     <p class="text-2xl font-display font-bold text-primary mb-1">Public</p>
-                     <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Ledger Access</p>
+                  <div
+                    v-for="badge in pageData?.assessmentSection?.badges ?? [
+                      { value: '100%', label: 'Geographical Data' },
+                      { value: '24/7', label: 'Node Monitoring' },
+                      { value: 'Peer', label: 'Reviewed Outcomes' },
+                      { value: 'Public', label: 'Ledger Access' },
+                    ]"
+                    :key="badge.label"
+                    class="p-8 bg-white rounded-3xl border border-outline-variant/10"
+                  >
+                     <p class="text-2xl font-display font-bold text-primary mb-1">{{ badge.value }}</p>
+                     <p class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">{{ badge.label }}</p>
                   </div>
                </div>
             </div>
