@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRuntimeConfig, useAsyncData } from '#imports'
 import {
   HttpPartnersRepository,
@@ -8,14 +8,16 @@ import {
   type InterventionCountry,
 } from '@infrastructure/repositories/HttpPartnersRepository'
 import WorldInterventionMap from '../components/WorldInterventionMap.vue'
-import { Globe, GraduationCap, FlaskConical, Handshake, MapPin } from 'lucide-vue-next'
+import DetailModal from '../components/DetailModal.vue'
+import ImageLightbox from '../components/ImageLightbox.vue'
+import { Globe, GraduationCap, FlaskConical, Handshake, MapPin, ExternalLink } from 'lucide-vue-next'
 
 useHead({ title: 'Our Network — RuralNexus' })
 
 const config = useRuntimeConfig()
 const repo = new HttpPartnersRepository(config.public.apiBase as string)
 
-// All 6 fetches in one parallel call — one round-trip instead of six
+// All 7 fetches in one parallel call — one round-trip instead of seven
 const { data: networkData } = useAsyncData('network-all', () =>
   Promise.all([
     repo.getTeamByType('ceo'),
@@ -23,6 +25,7 @@ const { data: networkData } = useAsyncData('network-all', () =>
     repo.getTeamByType('advisory'),
     repo.getByContinent('Europe'),
     repo.getByContinent('Africa'),
+    repo.getByContinent('Global'),
     repo.getInterventionCountries(),
   ])
 )
@@ -32,7 +35,8 @@ const paManagers = computed(() => networkData.value?.[1] ?? [])
 const advisoryBoard = computed(() => networkData.value?.[2] ?? [])
 const europePartners = computed(() => networkData.value?.[3] ?? [])
 const africaPartners = computed(() => networkData.value?.[4] ?? [])
-const interventionCountries = computed(() => networkData.value?.[5] ?? [])
+const globalPartners = computed(() => networkData.value?.[5] ?? [])
+const interventionCountries = computed(() => networkData.value?.[6] ?? [])
 
 function typeIcon(type: Partner['type']) {
   const map: Record<string, typeof Globe> = {
@@ -43,6 +47,11 @@ function typeIcon(type: Partner['type']) {
   }
   return map[type] ?? Globe
 }
+
+// ── Detail modals & lightbox ───────────────────────────────────────
+const selectedPartner = ref<Partner | null>(null)
+const selectedExpert = ref<TeamMemberApi | null>(null)
+const lightboxImage = ref<{ url: string; alt: string } | null>(null)
 </script>
 
 <template>
@@ -75,7 +84,12 @@ function typeIcon(type: Partner['type']) {
             class="p-8 bg-primary text-white rounded-[36px] flex items-start gap-6"
           >
             <!-- Avatar: photo if available, else initials -->
-            <div class="w-20 h-20 hex-mask flex-shrink-0 overflow-hidden">
+            <button
+              type="button"
+              class="w-20 h-20 hex-mask flex-shrink-0 overflow-hidden"
+              :class="member.avatar?.url ? 'cursor-zoom-in' : 'cursor-default'"
+              @click="member.avatar?.url && (lightboxImage = { url: member.avatar.url, alt: member.name })"
+            >
               <img
                 v-if="member.avatar?.url"
                 :src="member.avatar.url"
@@ -88,18 +102,19 @@ function typeIcon(type: Partner['type']) {
               >
                 {{ member.name.charAt(0) }}
               </div>
-            </div>
+            </button>
             <div class="min-w-0">
               <p class="text-xs font-bold uppercase tracking-widest text-white/60 mb-1">{{ member.role }}</p>
               <p class="font-display font-bold text-xl mb-2">{{ member.name }}</p>
               <p v-if="member.bio" class="text-sm text-white/80 font-body leading-relaxed mb-3">{{ member.bio }}</p>
               <!-- Program areas -->
               <div v-if="member.programAreas?.length" class="flex flex-wrap gap-1.5 mb-3">
-                <span
+                <NuxtLink
                   v-for="pa in member.programAreas"
                   :key="pa.id"
-                  class="px-2 py-0.5 text-[10px] font-bold bg-leaf/30 text-leaf-300 rounded-full"
-                >{{ pa.code }}: {{ pa.title }}</span>
+                  :to="`/programs/${pa.slug}`"
+                  class="px-2 py-0.5 text-[10px] font-bold bg-leaf/30 text-leaf-300 rounded-full hover:bg-leaf/50 transition-colors"
+                >{{ pa.code }}: {{ pa.title }}</NuxtLink>
               </div>
               <div v-if="member.expertise?.length" class="flex flex-wrap gap-1.5">
                 <span
@@ -136,7 +151,7 @@ function typeIcon(type: Partner['type']) {
                 <MapPin class="w-3 h-3" /> {{ member.location }}
               </p>
             </div>
-            <p v-if="member.bio" class="text-xs font-body text-on-surface-variant opacity-70 leading-relaxed">
+            <p v-if="member.bio" class="text-xs font-body text-on-surface-variant opacity-70 leading-relaxed line-clamp-3">
               {{ member.bio }}
             </p>
             <div v-if="member.expertise?.length" class="flex flex-wrap gap-1" :class="member.bio ? '' : 'mt-auto'">
@@ -146,15 +161,13 @@ function typeIcon(type: Partner['type']) {
                 class="px-2 py-0.5 text-[10px] font-medium bg-surface-container text-on-surface-variant rounded-full"
               >{{ exp.skill }}</span>
             </div>
-            <a
-              v-if="member.link?.linkUrl"
-              :href="member.link.linkUrl"
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
               class="mt-auto text-[10px] font-bold uppercase tracking-widest text-primary hover:underline inline-flex items-center gap-1"
+              @click="selectedExpert = member"
             >
-              {{ member.link.linkLabel || 'Know more' }} →
-            </a>
+              {{ member.link?.linkLabel || 'Know more' }} →
+            </button>
           </div>
         </div>
 
@@ -178,10 +191,12 @@ function typeIcon(type: Partner['type']) {
             <span class="h-px flex-1 bg-outline-variant/30"></span>
           </h3>
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div
+            <button
               v-for="partner in europePartners"
               :key="partner.id"
+              type="button"
               class="p-5 bg-surface-container rounded-[20px] flex flex-col items-center text-center gap-2 hover:shadow-md hover:-translate-y-1 transition-all group"
+              @click="selectedPartner = partner"
             >
               <component :is="typeIcon(partner.type)" class="w-6 h-6 text-primary opacity-60 group-hover:opacity-100 transition-opacity" />
               <p class="font-bold text-sm text-on-surface leading-tight">{{ partner.abbreviation || partner.name }}</p>
@@ -191,7 +206,7 @@ function typeIcon(type: Partner['type']) {
               <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary">
                 {{ partner.type }}
               </span>
-            </div>
+            </button>
           </div>
         </div>
 
@@ -200,17 +215,19 @@ function typeIcon(type: Partner['type']) {
         </p>
 
         <!-- Africa -->
-        <div>
+        <div :class="globalPartners.length ? 'mb-14' : ''">
           <h3 class="text-lg font-display font-bold text-on-surface-variant uppercase tracking-widest mb-6 flex items-center gap-3">
             <span class="h-px flex-1 bg-outline-variant/30"></span>
             Africa
             <span class="h-px flex-1 bg-outline-variant/30"></span>
           </h3>
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-            <div
+            <button
               v-for="partner in africaPartners"
               :key="partner.id"
+              type="button"
               class="p-5 bg-surface-container rounded-[20px] flex flex-col items-center text-center gap-2 hover:shadow-md hover:-translate-y-1 transition-all group"
+              @click="selectedPartner = partner"
             >
               <component :is="typeIcon(partner.type)" class="w-6 h-6 text-leaf opacity-60 group-hover:opacity-100 transition-opacity" />
               <p class="font-bold text-sm text-on-surface leading-tight">{{ partner.abbreviation || partner.name }}</p>
@@ -220,7 +237,34 @@ function typeIcon(type: Partner['type']) {
               <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-leaf/10 text-leaf">
                 {{ partner.type }}
               </span>
-            </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Global -->
+        <div v-if="globalPartners.length">
+          <h3 class="text-lg font-display font-bold text-on-surface-variant uppercase tracking-widest mb-6 flex items-center gap-3">
+            <span class="h-px flex-1 bg-outline-variant/30"></span>
+            Global
+            <span class="h-px flex-1 bg-outline-variant/30"></span>
+          </h3>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <button
+              v-for="partner in globalPartners"
+              :key="partner.id"
+              type="button"
+              class="p-5 bg-surface-container rounded-[20px] flex flex-col items-center text-center gap-2 hover:shadow-md hover:-translate-y-1 transition-all group"
+              @click="selectedPartner = partner"
+            >
+              <component :is="typeIcon(partner.type)" class="w-6 h-6 text-cyan opacity-60 group-hover:opacity-100 transition-opacity" />
+              <p class="font-bold text-sm text-on-surface leading-tight">{{ partner.abbreviation || partner.name }}</p>
+              <p class="text-[10px] text-on-surface-variant opacity-60 flex items-center gap-1">
+                <MapPin class="w-3 h-3" /> {{ partner.country }}
+              </p>
+              <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan/10 text-cyan">
+                {{ partner.type }}
+              </span>
+            </button>
           </div>
         </div>
       </div>
@@ -252,6 +296,90 @@ function typeIcon(type: Partner['type']) {
         </span>
       </div>
     </section>
+
+    <!-- ── Partner detail modal ──────────────────────────────────────── -->
+    <DetailModal :open="!!selectedPartner" @close="selectedPartner = null">
+      <template v-if="selectedPartner">
+        <div class="flex items-start gap-4 mb-5">
+          <div class="w-16 h-16 rounded-2xl bg-surface-container flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <img
+              v-if="selectedPartner.logo?.url"
+              :src="selectedPartner.logo.url"
+              :alt="selectedPartner.name"
+              class="w-full h-full object-contain"
+            />
+            <component v-else :is="typeIcon(selectedPartner.type)" class="w-7 h-7 text-primary opacity-70" />
+          </div>
+          <div class="min-w-0">
+            <p class="font-display font-bold text-xl leading-tight">{{ selectedPartner.name }}</p>
+            <p v-if="selectedPartner.abbreviation" class="text-xs text-on-surface-variant opacity-60 mt-0.5">{{ selectedPartner.abbreviation }}</p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 mb-4">
+          <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary">{{ selectedPartner.type }}</span>
+          <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant flex items-center gap-1">
+            <MapPin class="w-3 h-3" /> {{ selectedPartner.country }} · {{ selectedPartner.continent }}
+          </span>
+        </div>
+        <p v-if="selectedPartner.description" class="text-sm text-on-surface-variant font-body leading-relaxed mb-5">
+          {{ selectedPartner.description }}
+        </p>
+        <a
+          v-if="selectedPartner.website"
+          :href="selectedPartner.website"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-primary hover:underline"
+        >
+          Visit website <ExternalLink class="w-3.5 h-3.5" />
+        </a>
+      </template>
+    </DetailModal>
+
+    <!-- ── Expert detail modal ───────────────────────────────────────── -->
+    <DetailModal :open="!!selectedExpert" @close="selectedExpert = null">
+      <template v-if="selectedExpert">
+        <div class="flex items-start gap-4 mb-5">
+          <div class="w-16 h-16 hex-mask bg-leaf/15 flex items-center justify-center text-leaf font-display font-bold text-2xl flex-shrink-0">
+            {{ selectedExpert.name.charAt(0) }}
+          </div>
+          <div class="min-w-0">
+            <p class="font-display font-bold text-xl leading-tight">{{ selectedExpert.name }}</p>
+            <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant opacity-60 mt-1">{{ selectedExpert.role }}</p>
+            <p v-if="selectedExpert.location" class="text-xs text-on-surface-variant opacity-50 mt-1 flex items-center gap-1">
+              <MapPin class="w-3 h-3" /> {{ selectedExpert.location }}
+            </p>
+          </div>
+        </div>
+        <p v-if="selectedExpert.bio" class="text-sm text-on-surface-variant font-body leading-relaxed mb-5">
+          {{ selectedExpert.bio }}
+        </p>
+        <div v-if="selectedExpert.expertise?.length" class="flex flex-wrap gap-1.5 mb-5">
+          <span
+            v-for="exp in selectedExpert.expertise"
+            :key="exp.skill"
+            class="px-2 py-0.5 text-[10px] font-medium bg-surface-container text-on-surface-variant rounded-full"
+          >{{ exp.skill }}</span>
+        </div>
+        <a
+          v-if="selectedExpert.link?.linkUrl"
+          :href="selectedExpert.link.linkUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-primary hover:underline"
+        >
+          {{ selectedExpert.link.linkLabel || 'Visit portal' }} <ExternalLink class="w-3.5 h-3.5" />
+        </a>
+      </template>
+    </DetailModal>
+
+    <!-- ── Team member image lightbox ───────────────────────────────── -->
+    <ImageLightbox
+      :open="!!lightboxImage"
+      :src="lightboxImage?.url ?? ''"
+      :alt="lightboxImage?.alt"
+      @close="lightboxImage = null"
+    />
 
   </div>
 </template>

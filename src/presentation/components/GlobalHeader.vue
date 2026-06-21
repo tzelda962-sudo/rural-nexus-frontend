@@ -31,7 +31,7 @@ const navLinks = [
       { name: 'Active Projects', path: '/projects',     desc: 'Field initiatives & active work',  icon: Sprout   },
       { name: 'Publications',    path: '/publications', desc: 'Reports, papers & policy briefs',  icon: FileText },
       { name: 'News & Events',   path: '/news',         desc: 'Updates from the field',           icon: Calendar },
-      { name: 'Transdisciplinary Research Tools', path: '/research',   desc: 'Methodological resources',          icon: BookOpen },
+      { name: 'Transdisciplinary Tools & Research', path: '/research',   desc: 'Methodological resources',          icon: BookOpen },
     ],
   },
   { name: 'Gallery', path: '/gallery' },
