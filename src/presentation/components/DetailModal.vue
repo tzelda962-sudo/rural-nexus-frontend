@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { X } from 'lucide-vue-next'
 
-defineProps<{ open: boolean }>()
+withDefaults(defineProps<{ open: boolean; variant?: 'default' | 'primary' }>(), {
+  variant: 'default',
+})
 const emit = defineEmits<{ close: [] }>()
 </script>
 
@@ -15,11 +17,15 @@ const emit = defineEmits<{ close: [] }>()
       >
         <Transition name="modal-pop" appear>
           <div
-            class="relative w-full max-w-lg max-h-[85vh] overflow-y-auto bg-surface rounded-[28px] shadow-2xl p-8"
+            class="relative w-full max-w-lg max-h-[85vh] overflow-y-auto rounded-[28px] shadow-2xl p-8"
+            :class="variant === 'primary' ? 'bg-primary text-white' : 'bg-surface'"
           >
             <button
               type="button"
-              class="absolute top-4 right-4 w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high transition-colors"
+              class="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+              :class="variant === 'primary'
+                ? 'bg-white/20 text-white hover:bg-white/30'
+                : 'bg-surface-container text-on-surface-variant hover:bg-surface-container-high'"
               @click="emit('close')"
             >
               <X class="w-4 h-4" />

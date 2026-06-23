@@ -51,6 +51,7 @@ function typeIcon(type: Partner['type']) {
 
 // ── Detail modals & lightbox ───────────────────────────────────────
 const selectedPartner = ref<Partner | null>(null)
+const selectedManager = ref<TeamMemberApi | null>(null)
 const selectedExpert = ref<TeamMemberApi | null>(null)
 const lightboxImage = ref<{ url: string; alt: string } | null>(null)
 </script>
@@ -107,7 +108,7 @@ const lightboxImage = ref<{ url: string; alt: string } | null>(null)
             <div class="min-w-0">
               <p class="text-xs font-bold uppercase tracking-widest text-white/60 mb-1">{{ member.role }}</p>
               <p class="font-display font-bold text-xl mb-2">{{ member.name }}</p>
-              <p v-if="member.bio" class="text-sm text-white/80 font-body leading-relaxed mb-3">{{ member.bio }}</p>
+              <p v-if="member.bio" class="text-sm text-white/80 font-body leading-relaxed mb-3 line-clamp-3">{{ member.bio }}</p>
               <!-- Program areas -->
               <div v-if="member.programAreas?.length" class="flex flex-wrap gap-1.5 mb-3">
                 <NuxtLink
@@ -117,13 +118,20 @@ const lightboxImage = ref<{ url: string; alt: string } | null>(null)
                   class="px-2 py-0.5 text-[10px] font-bold bg-leaf/30 text-leaf-300 rounded-full hover:bg-leaf/50 transition-colors"
                 >{{ pa.code }}: {{ pa.title }}</NuxtLink>
               </div>
-              <div v-if="member.expertise?.length" class="flex flex-wrap gap-1.5">
+              <div v-if="member.expertise?.length" class="flex flex-wrap gap-1.5 mb-3">
                 <span
                   v-for="exp in member.expertise"
                   :key="exp.skill"
                   class="px-2 py-0.5 text-[10px] font-bold bg-white/20 text-white rounded-full"
                 >{{ exp.skill }}</span>
               </div>
+              <button
+                type="button"
+                class="text-[10px] font-bold uppercase tracking-widest text-leaf-300 hover:underline inline-flex items-center gap-1"
+                @click="selectedManager = member"
+              >
+                Read more →
+              </button>
             </div>
           </div>
         </div>
@@ -338,6 +346,59 @@ const lightboxImage = ref<{ url: string; alt: string } | null>(null)
           class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-primary hover:underline"
         >
           Visit website <ExternalLink class="w-3.5 h-3.5" />
+        </a>
+      </template>
+    </DetailModal>
+
+    <!-- ── Management team detail modal ────────────────────────────────── -->
+    <DetailModal :open="!!selectedManager" variant="primary" @close="selectedManager = null">
+      <template v-if="selectedManager">
+        <div class="flex items-start gap-4 mb-5">
+          <div class="w-16 h-16 hex-mask flex-shrink-0 overflow-hidden">
+            <img
+              v-if="selectedManager.avatar?.url"
+              :src="selectedManager.avatar.url"
+              :alt="selectedManager.name"
+              class="w-full h-full object-cover"
+            />
+            <div
+              v-else
+              class="w-full h-full bg-white/20 flex items-center justify-center text-white font-display font-bold text-2xl"
+            >
+              {{ selectedManager.name.charAt(0) }}
+            </div>
+          </div>
+          <div class="min-w-0">
+            <p class="font-display font-bold text-xl leading-tight">{{ selectedManager.name }}</p>
+            <p class="text-xs font-bold uppercase tracking-wider text-white/60 mt-1">{{ selectedManager.role }}</p>
+          </div>
+        </div>
+        <p v-if="selectedManager.bio" class="text-sm text-white/80 font-body leading-relaxed mb-5">
+          {{ selectedManager.bio }}
+        </p>
+        <div v-if="selectedManager.programAreas?.length" class="flex flex-wrap gap-1.5 mb-5">
+          <NuxtLink
+            v-for="pa in selectedManager.programAreas"
+            :key="pa.id"
+            :to="`/programs/${pa.slug}`"
+            class="px-2 py-0.5 text-[10px] font-bold bg-leaf/30 text-leaf-300 rounded-full hover:bg-leaf/50 transition-colors"
+          >{{ pa.code }}: {{ pa.title }}</NuxtLink>
+        </div>
+        <div v-if="selectedManager.expertise?.length" class="flex flex-wrap gap-1.5 mb-5">
+          <span
+            v-for="exp in selectedManager.expertise"
+            :key="exp.skill"
+            class="px-2 py-0.5 text-[10px] font-bold bg-white/20 text-white rounded-full"
+          >{{ exp.skill }}</span>
+        </div>
+        <a
+          v-if="selectedManager.link?.linkUrl"
+          :href="selectedManager.link.linkUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-white hover:underline"
+        >
+          {{ selectedManager.link.linkLabel || 'Visit website' }} <ExternalLink class="w-3.5 h-3.5" />
         </a>
       </template>
     </DetailModal>
