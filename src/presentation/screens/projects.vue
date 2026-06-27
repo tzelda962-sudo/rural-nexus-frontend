@@ -46,20 +46,23 @@ const { data: initiativesData } = await useAsyncData('projects-initiatives', () 
   $fetch<{ docs: Initiative[] }>(`${apiBase}/api/initiatives?showcase=true`),
 )
 
-type PayloadMetric = {
-  id: string
-  metric: string
-  value: string
-  unit?: string | null
-  description?: string | null
-  icon?: string | null
-  category?: string | null
-  trend?: 'up' | 'down' | 'stable' | null
-  order?: number
+type ImpactPageGlobal = {
+  assessmentSection?: {
+    badges?: { value: string; label: string; description?: string | null; icon?: string | null }[]
+  }
 }
 
 const { data: metricsData } = useAsyncData('impact-metrics', () =>
-  $fetch<{ docs: PayloadMetric[] }>(`${apiBase}/api/impact-metrics?limit=50&depth=1&sort=order`),
+  $fetch<ImpactPageGlobal>(`${apiBase}/api/globals/impact-page`).catch(() => ({} as ImpactPageGlobal)),
+)
+
+const metricItems = computed(() =>
+  (metricsData.value?.assessmentSection?.badges ?? []).map(b => ({
+    metric: b.label,
+    value: b.value,
+    description: b.description ?? null,
+    icon: b.icon ?? null,
+  })),
 )
 
 const projects = computed(() =>
@@ -106,7 +109,7 @@ const selectedProjectHtml = computed(() => lexicalToHtml(selectedProject.value?.
     </section>
 
     <!-- Track Record -->
-    <ImpactMetrics :items="metricsData?.docs ?? []" />
+    <ImpactMetrics :items="metricItems" />
     <section class="pb-4 -mt-12 relative z-10">
       <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <p class="text-xs font-body text-on-surface-variant opacity-50 leading-relaxed italic">
