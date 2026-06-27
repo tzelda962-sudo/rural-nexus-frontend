@@ -7,7 +7,6 @@ import {
   type TeamMemberApi,
   type InterventionCountry,
 } from '@infrastructure/repositories/HttpPartnersRepository'
-import WorldInterventionMap from '../components/WorldInterventionMap.vue'
 import MapTilerInterventionMap from '../components/MapTilerInterventionMap.vue'
 import DetailModal from '../components/DetailModal.vue'
 import ImageLightbox from '../components/ImageLightbox.vue'
@@ -291,7 +290,7 @@ const lightboxImage = ref<{ url: string; alt: string } | null>(null)
       </div>
 
       <div class="px-4 sm:px-6 lg:px-8">
-        <WorldInterventionMap :countries="interventionCountries ?? []" />
+        <MapTilerInterventionMap :countries="interventionCountries ?? []" />
       </div>
 
       <!-- Country chips -->
@@ -303,11 +302,6 @@ const lightboxImage = ref<{ url: string; alt: string } | null>(null)
         >
           {{ country.name }}
         </span>
-      </div>
-
-      <!-- Trial: MapTiler-powered map (evaluating as a replacement) -->
-      <div class="px-4 sm:px-6 lg:px-8 mt-14">
-        <MapTilerInterventionMap :countries="interventionCountries ?? []" />
       </div>
     </section>
 

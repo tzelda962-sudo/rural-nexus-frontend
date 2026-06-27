@@ -127,7 +127,7 @@
 
         <!-- World Map -->
         <div class="mb-12">
-          <WorldInterventionMap :countries="interventionCountries ?? []" />
+          <MapTilerInterventionMap :countries="interventionCountries ?? []" />
         </div>
 
         <!-- Regions list + stats -->
@@ -210,7 +210,7 @@ import { computed } from 'vue'
 import { usePayloadLivePreview } from '../composables/usePayloadLivePreview'
 import { HttpProgramAreaRepository } from '@infrastructure/repositories/HttpProgramAreaRepository'
 import { HttpPartnersRepository, type InterventionCountry } from '@infrastructure/repositories/HttpPartnersRepository'
-import WorldInterventionMap from '../components/WorldInterventionMap.vue'
+import MapTilerInterventionMap from '../components/MapTilerInterventionMap.vue'
 import { COLOR_PALETTE } from '../constants/colorPalette'
 
 type AboutPillar = { title: string; description: string }

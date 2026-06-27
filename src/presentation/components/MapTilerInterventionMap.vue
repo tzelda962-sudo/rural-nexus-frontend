@@ -29,7 +29,7 @@ onMounted(async () => {
 
   map = new maptilersdk.Map({
     container: mapContainer.value,
-    style: maptilersdk.MapStyle.STREETS,
+    style: maptilersdk.MapStyle.DATAVIZ,
     center: [15, 10],
     zoom: 1.5,
     navigationControl: true,
@@ -86,9 +86,9 @@ onMounted(async () => {
       type: 'line',
       source: 'germany-links',
       paint: {
-        'line-color': '#16a34a',
-        'line-width': 1.5,
-        'line-opacity': 0.65,
+        'line-color': '#4ade80',
+        'line-width': 2,
+        'line-opacity': 1,
         'line-dasharray': [2, 2],
       },
     })
@@ -106,8 +106,8 @@ onMounted(async () => {
       type: 'circle',
       source: 'germany-hub',
       paint: {
-        'circle-radius': 6,
-        'circle-color': '#16a34a',
+        'circle-radius': 8,
+        'circle-color': '#4ade80',
         'circle-stroke-width': 2,
         'circle-stroke-color': '#ffffff',
       },
@@ -137,11 +137,6 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="relative w-full select-none">
-    <div class="flex items-center gap-2 mb-3">
-      <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-amber-400/20 text-amber-600 rounded-full">Beta</span>
-      <p class="text-xs text-on-surface-variant opacity-60 font-body">Trial: MapTiler-powered map (evaluating as a replacement for the map above)</p>
-    </div>
-
     <div class="relative rounded-[28px] overflow-hidden bg-[#F8FAFC] shadow-lg" style="height: 60vh; min-height: 420px;">
       <div v-if="!apiKey" class="absolute inset-0 flex items-center justify-center bg-surface-container/80 z-20 text-center px-6">
         <p class="text-sm text-on-surface-variant font-body">
