@@ -112,10 +112,8 @@ const selectedProjectHtml = computed(() => lexicalToHtml(selectedProject.value?.
     <ImpactMetrics :items="metricItems" />
     <section class="pb-4 -mt-12 relative z-10">
       <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <p class="text-xs font-body text-on-surface-variant opacity-50 leading-relaxed italic">
-          These figures reflect the past and ongoing track record of RuralNexus's CEO and other team members,
-          accumulated across previous leadership roles, research engagements, and organizational affiliations —
-          they are not exclusively attributable to RuralNexus's own direct projects.
+        <p class="text-sm font-body text-on-surface-variant opacity-50 leading-relaxed italic">
+          Project references on this website include both activities undertaken by Rural Nexus and the professional experience of its team members gained through previous roles with universities, research institutions, NGOs, private-sector organizations, and collaborative partnerships. Unless expressly stated, projects completed before the establishment of Rural Nexus were implemented under the respective institutions and are included solely to illustrate the experience and expertise of Rural Nexus personnel. All project ownership, intellectual property, and associated rights remain with the respective institutions, partners, and rights holder.
         </p>
       </div>
     </section>
