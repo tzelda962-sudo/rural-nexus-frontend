@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { Share2 } from 'lucide-vue-next';
+import { Share2, Maximize2 } from 'lucide-vue-next';
 import { usePayloadLivePreview } from '../composables/usePayloadLivePreview';
 import { useShareTestimonial } from '../composables/useShareTestimonial';
+import ImageLightbox from '../components/ImageLightbox.vue';
 
 type GalleryPageGlobal = {
   header: {
@@ -52,6 +53,8 @@ const { data: testimonialsData } = useAsyncData('testimonials', () =>
   $fetch<{ docs: Testimonial[] }>(`${apiBase}/api/homepage-testimonials?limit=3&depth=1&sort=order`),
 )
 const { share, copiedId } = useShareTestimonial()
+
+const lightbox = ref<{ url: string; alt: string } | null>(null)
 
 const { previewData: pageData } = usePayloadLivePreview<GalleryPageGlobal>(rawPage)
 
@@ -185,6 +188,17 @@ const categoryColors: Record<string, string> = {
               class="absolute inset-0 bg-black/0 transition group-hover:bg-black/40"
             />
 
+            <!-- Fullscreen button: always visible on mobile, hover-only on desktop -->
+            <button
+              v-if="item.imageUrl"
+              type="button"
+              class="absolute right-4 top-4 z-10 rounded-full bg-black/50 p-2 text-white backdrop-blur-sm transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
+              :aria-label="`View ${item.title} fullscreen`"
+              @click.stop="lightbox = { url: item.imageUrl, alt: item.title }"
+            >
+              <Maximize2 class="w-4 h-4" />
+            </button>
+
             <!-- Category badge -->
             <div
               class="absolute left-4 top-4 z-10 opacity-0 transition-opacity group-hover:opacity-100"
@@ -279,6 +293,13 @@ const categoryColors: Record<string, string> = {
         </div>
       </div>
     </section>
+
+    <ImageLightbox
+      :open="!!lightbox"
+      :src="lightbox?.url ?? ''"
+      :alt="lightbox?.alt"
+      @close="lightbox = null"
+    />
   </div>
 </template>
 
